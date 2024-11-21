@@ -3,7 +3,7 @@ plugins {
     id("buildlogic.projectroot")
 }
 
-group = "com.some.sample"
+group = "io.github.andriesfc.h2database-tool"
 version = "0.0.1"
 
 subprojects {
@@ -13,5 +13,4 @@ subprojects {
 
 dependencies {
     dokkatoo(project(":app"))
-    dokkatoo(project(":commons"))
 }

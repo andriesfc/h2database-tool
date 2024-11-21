@@ -2,7 +2,6 @@ pluginManagement {
     includeBuild("build-logic")
 }
 
-rootProject.name = "kotlin-java-template"
+rootProject.name = "h2database-tool"
 
 include(":app")
-include(":commons")

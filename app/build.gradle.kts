@@ -1,13 +1,12 @@
+
 plugins {
     id("buildlogic.kotlin.app")
 }
 
 
 application {
-    mainClass = "HelloWorldKt"
+    mainClass = "h2database-tool.app.ToolMain"
 }
 
-dependencies {
-    implementation(project(":commons"))
-}
+dependencies {}
 
