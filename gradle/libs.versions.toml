@@ -1,0 +1,29 @@
+[versions]
+io-kotest = "5.9.1"
+junit-jupiter = "5.11.3"
+kotlin = "2.0.21"
+org-jetbrains-annotations = "24.0.1"
+org-mockito-mockito-core = "4.11.0"
+org-slf4j = "2.0.16"
+mockk = "1.13.13"
+simver4j = "5.3.0"
+dokkatoo = "2.4.0"
+
+[libraries]
+io-kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "io-kotest" }
+io-kotest-framework-api = { module = "io.kotest:kotest-framework-api", version.ref = "io-kotest" }
+io-kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "io-kotest" }
+io-kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "io-kotest" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+org-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "org-jetbrains-annotations" }
+org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
+org-sl4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+simver4j = { module = "org.semver4j:semver4j", version.ref = "simver4j" }
+dokkatoo-plugin = { module = "dev.adamko.dokkatoo:dokkatoo-plugin", version.ref = "dokkatoo" }
+
+[plugins]
+jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+dokka-html = { id = "dev.adamko.dokkatoo"  }
