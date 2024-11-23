@@ -1,73 +1,51 @@
-@file:Suppress("SqlSourceToSinkFlow")
 
 package h2databasetool.utils
 
 import java.io.File
 import java.io.Reader
-import java.io.StringReader
-import javax.sql.DataSource
+import java.sql.Connection
 
-private const val SCRIPT_STATEMENT_DELIMITER = ';'
+private const val END_OF_STATEMENT = ';'
 private const val EOF = -1
 
-private enum class ScriptProcessState {
-    READING,
-    READY,
-    END_OF_SCRIPT
+private enum class State {
+    Loading,
+    Ready,
+    EndOfData
 }
 
-fun DataSource.executeScript(
-    script: Reader,
-    autoClose: Boolean = true,
-    statementDelimiter: Char = SCRIPT_STATEMENT_DELIMITER,
-) {
-    try {
-        connection.using {
-            val statement = createStatement()
-            var state = ScriptProcessState.READING
-            val ready = StringBuilder()
+fun Connection.executeScript(script: String) = executeScript(script.reader())
+fun Connection.executeScript(file: File) = executeScript(file.reader())
+fun Connection.executeScript(source: Reader) {
+    createStatement().use { statement ->
+        val buffer = StringBuilder()
+        var state = State.Loading
+        fun executeScript() {
+            if (buffer.isEmpty()) return
+            val sql = buffer.toString().also { buffer.clear() }
+            @Suppress("SqlSourceToSinkFlow")
+            statement.execute(sql)
+        }
 
-            fun processReadyStatement() {
-                if (ready.isEmpty()) return
-                val sql = ready.toString()
-                statement.execute(sql)
-                ready.clear()
-            }
+        while (true) {
+            when (state) {
 
-            script.using {
-                do {
-                    when (state) {
+                State.EndOfData -> {
+                    executeScript()
+                    break
+                }
 
-                        ScriptProcessState.READING -> do {
-                            when (val c = read()) {
-                                EOF -> state = ScriptProcessState.END_OF_SCRIPT
-                                statementDelimiter.code -> state = ScriptProcessState.READY
-                                else -> ready.append(c)
-                            }
-                        } while (state == ScriptProcessState.READING)
+                State.Ready -> {
+                    executeScript()
+                    state = State.Loading
+                }
 
-                        ScriptProcessState.READY -> {
-                            processReadyStatement()
-                            state = ScriptProcessState.READING
-                        }
-
-                        ScriptProcessState.END_OF_SCRIPT ->
-                            processReadyStatement()
-                    }
-                } while (state != ScriptProcessState.END_OF_SCRIPT)
+                State.Loading -> when (val c = source.read()) {
+                    EOF -> state = State.EndOfData
+                    END_OF_STATEMENT.code -> state = State.Ready
+                    else -> buffer.append(c.toChar())
+                }
             }
         }
-    } finally {
-        if (autoClose) script.closeSilent()
     }
 }
-
-fun DataSource.executeScriptText(
-    scriptText: String,
-    statementDelimiter: Char = SCRIPT_STATEMENT_DELIMITER
-) = executeScript(StringReader(scriptText), statementDelimiter = statementDelimiter)
-
-fun DataSource.executeScriptFile(
-    scriptFile: File,
-    statementDelimiter: Char = SCRIPT_STATEMENT_DELIMITER
-) = executeScript(scriptFile.reader(), statementDelimiter = statementDelimiter)
