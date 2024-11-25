@@ -22,3 +22,6 @@ operator fun File.component2(): String = nameWithoutExtension
 operator fun File.component3(): String? = extension.takeUnless(String::isEmpty)
 
 fun File.files(predicate: (File) -> Boolean) = listFiles(predicate)?.toList() ?: emptyList()
+
+fun File.canonical(): File = canonicalFile
+fun File.absolute(): File = absoluteFile

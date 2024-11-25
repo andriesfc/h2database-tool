@@ -2,14 +2,17 @@ package h2databasetool.app
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.output.MordantHelpFormatter
+import com.github.ajalt.clikt.core.installMordant
+import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
 
 internal fun bootstrap() = object : CliktCommand("h2") {
 
     init {
+
+        installMordant(force = true)
         configureContext {
             helpFormatter = { context ->
-                MordantHelpFormatter(
+                MordantMarkdownHelpFormatter(
                     context,
                     showDefaultValues = true,
                     showRequiredTag = true,
@@ -28,5 +31,6 @@ internal fun bootstrap() = object : CliktCommand("h2") {
 
     override val printHelpOnEmptyArgs: Boolean = true
 
-    override fun run() = Unit
+    override fun run() {
+    }
 }

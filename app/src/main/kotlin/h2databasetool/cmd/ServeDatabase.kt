@@ -3,6 +3,10 @@ package h2databasetool.cmd
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.*
+import h2databasetool.env.EnvVar.H2TOOL_TCP_SERVER_DATABASE_NETWORK_PORT
+import h2databasetool.env.EnvVar.H2TOOL_BASE_DIR
+import h2databasetool.env.EnvVar.H2TOOL_TCP_SERVER_ENABLE_VIRTUAL_THREADS
+import h2databasetool.env.EnvDefault
 import h2databasetool.utils.add
 import h2databasetool.utils.echoMarkdown
 import h2databasetool.utils.file
@@ -10,15 +14,15 @@ import org.h2.server.TcpServer
 
 class ServeDatabase : CliktCommand("serveDb") {
 
-    override fun help(context: Context): String {
-        return "Serves databases via a TCP connection."
-    }
+    override fun help(context: Context): String = """
+        Serves databases via a TCP connection.
+        """.trimIndent()
 
     private val trace by option("--trace")
         .help("Trace calls and dumps output to dot-trace file.")
         .flag()
 
-    private val enableVirtualThreads by option()
+    private val enableVirtualThreads by option(envvar = H2TOOL_TCP_SERVER_ENABLE_VIRTUAL_THREADS)
         .help("Use virtual threads when client connects.")
         .flag()
 
@@ -26,9 +30,9 @@ class ServeDatabase : CliktCommand("serveDb") {
         .help("Only prints out messages, but does not expose amy database on a port.")
         .flag()
 
-    private val baseDir by option("--data-dir", metavar = "H2_DATA_DIRECTORY", envvar = H2_DATA_DIR)
+    private val baseDir by option("--data-dir", metavar = "H2_DATA_DIRECTORY", envvar = H2TOOL_BASE_DIR)
         .help("Location of database(s)")
-        .default("~/.h2/data")
+        .default(EnvDefault.BASE_DIR)
 
     private val allowOthers by option("--allow-others")
         .help("Allow connections from other hosts to databases.")
@@ -37,7 +41,7 @@ class ServeDatabase : CliktCommand("serveDb") {
     private val managementPassword by option("--management-password", metavar = "TCP management password")
         .help("Protect the exposed port on the lan with a password.")
 
-    private val port by option("--port", metavar = "H2_DATABASE_PORT", envvar = H2_DATABSE_NETWORK_PORT)
+    private val port by option("--port", metavar = "H2_DATABASE_PORT", envvar = H2TOOL_TCP_SERVER_DATABASE_NETWORK_PORT)
         .help("Network port on which to serve the database.")
         .convert { it.toUShort() }
         .default(3569u)
@@ -45,8 +49,7 @@ class ServeDatabase : CliktCommand("serveDb") {
     private val autoCreateDbIfNotExists by option("--auto-create-database").flag(
         default = false,
         defaultForHelp = "false"
-    )
-        .help("Allow clients connecting to create their own databases.")
+    ).help("Allow clients connecting to create their own databases.")
 
     private inline fun doOperation(announcement: String, operation: () -> Unit) {
         echoMarkdown(announcement)

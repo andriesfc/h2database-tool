@@ -4,12 +4,14 @@ junit-jupiter = "5.11.3"
 kotlin = "2.0.21"
 org-jetbrains-annotations = "24.0.1"
 org-mockito-mockito-core = "4.11.0"
-org-slf4j = "2.0.16"
 mockk = "1.13.13"
 simver4j = "5.3.0"
 dokkatoo = "2.4.0"
 clikt = "5.0.1"
 h2 = "2.3.232"
+jdbi = "3.47.0"
+logback = "1.5.12"
+slf4j = "2.0.16"
 
 [libraries]
 io-kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "io-kotest" }
@@ -21,13 +23,19 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 org-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "org-jetbrains-annotations" }
 org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
-sl4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j" }
+sl4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 simver4j = { module = "org.semver4j:semver4j", version.ref = "simver4j" }
 dokkatoo-plugin = { module = "dev.adamko.dokkatoo:dokkatoo-plugin", version.ref = "dokkatoo" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 clikt-markdown = { module = "com.github.ajalt.clikt:clikt-markdown", version.ref = "clikt" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
+jdbi-sqlobject = { module = "org.jdbi:jdbi3-sqlobject", version.ref = "jdbi" }
+jdbi-caffeine-cache = { module = "org.jdbi:jdbi3-caffeine-cache", version.ref = "jdbi" }
+jdbi-kotlin = { module = "org.jdbi:jdbi3-kotlin", version.ref = "jdbi"}
+jdbi-kotlin-sqlobject = { module = "org.jdbi:jdbi3-kotlin-sqlobject", version.ref = "jdbi" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 [plugins]
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
