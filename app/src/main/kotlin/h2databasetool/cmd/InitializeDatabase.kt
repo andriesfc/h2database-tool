@@ -6,45 +6,23 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.*
-import h2databasetool.env.EnvVar.H2TOOL_ALWAYS_QUOTE_SCHEMA
-import h2databasetool.env.EnvVar.H2TOOL_BASE_DIR
-import h2databasetool.env.EnvVar.H2TOOL_DATABASE_PASSWORD
-import h2databasetool.env.EnvVar.H2TOOL_DATABASE_USER
 import h2databasetool.env.EnvDefault
+import h2databasetool.env.EnvVar
 import h2databasetool.utils.*
-import org.h2.jdbc.JdbcSQLSyntaxErrorException
-import org.h2.jdbcx.JdbcDataSource
 import java.io.File
 import java.sql.DriverManager
+import org.h2.jdbc.JdbcSQLSyntaxErrorException
+import org.h2.jdbcx.JdbcDataSource
 
 class InitializeDatabase : CliktCommand("initDb") {
 
-    override fun help(context: Context): String =
-        """
-        Create a local H2 database in the specified base data directory.
-        
-        ## Use of defaults
-        
-        The tool uses various defaults when initializing a new database. These defaults may be overridden using
-        either options on the command line, or by using specific environment variables:
-        
-        | Environment Variable            | What it overrides                                                  | Default      |
-        |---------------------------------|--------------------------------------------------------------------| -------------|
-        | `${H2TOOL_BASE_DIR}`            | The base directory for all databases.                              | `${EnvDefault.BASE_DIR}` |
-        | `${H2TOOL_DATABASE_USER}`       | The user name (owner) of the database.                             | `${EnvDefault.DATABASE_USER}`         |
-        | `${H2TOOL_DATABASE_PASSWORD}`   | The password for the new database.`                                | `${EnvDefault.H2TOOL_USER_PASSWORD}`  |
-        | `${H2TOOL_ALWAYS_QUOTE_SCHEMA}` | Preserve the case for schema names when creating them before hand. | `${EnvDefault.H2TOOL_ALWAYS_QUOTE_SCHEMA}` |
-        
-        ## Initializing scripts
-        
-        Initializing scripts are handled on a per schema basis using the `--init-script` option. To specify a 
-        a specific script use the following syntax: `--init-script <schema>:<schema-init-file>`.  
-        
-        """.trimIndent()
+    private val helpDoc = resourceWithExtension<InitializeDatabase>("help.md")
 
-    private val dataDir by option(metavar = "H2_DATA_DIRECTORY", envvar = H2TOOL_BASE_DIR)
+    override fun help(context: Context): String = helpDoc.readText()
+
+    private val dataDir by option(metavar = "H2_DATA_DIRECTORY", envvar = EnvVar.H2TOOL_BASE_DIR)
         .help("Location of database")
-        .default(EnvDefault.BASE_DIR)
+        .default(EnvDefault.H2TOOL_BASE_DIR)
 
     private val dryRun: Boolean by option("--dry-run")
         .flag(default = false)
@@ -56,7 +34,7 @@ class InitializeDatabase : CliktCommand("initDb") {
 
     private val quoted by option(
         "--quote-schema-name",
-        envvar = H2TOOL_ALWAYS_QUOTE_SCHEMA
+        envvar = EnvVar.H2TOOL_ALWAYS_QUOTE_SCHEMA
     ).help("Always quote schema names").flag(
         default = EnvDefault.H2TOOL_ALWAYS_QUOTE_SCHEMA,
         defaultForHelp = "${EnvDefault.H2TOOL_ALWAYS_QUOTE_SCHEMA}"
@@ -66,18 +44,18 @@ class InitializeDatabase : CliktCommand("initDb") {
         "--user",
         help = "JDBC user name",
         metavar = "name",
-        envvar = H2TOOL_DATABASE_USER,
-    ).default(EnvDefault.DATABASE_USER)
+        envvar = EnvVar.H2TOOL_DATABASE_USER,
+    ).default(EnvDefault.H2TOOL_DATABASE_USER)
 
     private val password by option(
         "--password",
         metavar = "secret",
         help = "JDBC password (please change this if need be).",
-        envvar = H2TOOL_DATABASE_PASSWORD,
+        envvar = EnvVar.H2TOOL_DATABASE_PASSWORD,
     ).default(EnvDefault.H2TOOL_USER_PASSWORD)
 
     private val schemas by option(
-        "--init-schema","-s",
+        "--init-schema", "-s",
         metavar = "schema-name${SCHEMA_DELIMITER}optional-script-file"
     ).help(
         """
@@ -139,8 +117,8 @@ class InitializeDatabase : CliktCommand("initDb") {
             ).close()
         }
 
-        processInitializer(jdbcUrl)
         processSchemaInitializers(jdbcUrl)
+        processInitializer(jdbcUrl)
 
     }
 

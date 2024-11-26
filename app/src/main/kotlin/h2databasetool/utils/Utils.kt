@@ -21,3 +21,5 @@ inline fun <T> String.withBeforeAndAfter(
     else -> process(substring(0, index), substring(index + delimiter.length), index)
 }
 
+fun <T> Collection<T>.second(): T = iterator().run { next(); next() }
+
