@@ -21,4 +21,4 @@ A user may change via these defaults either via command options or via the follo
 
 1. The tool may arbitrary attempt to use another free/available port in case of
    it being in use. Note the port at startup for clients. 
-2. The **serveDb** command only prints the TCP server password if user does not supply a value.
+2. The **serveDb** command only prints the TCP server password if a user does not supply a value.

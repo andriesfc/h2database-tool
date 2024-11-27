@@ -6,8 +6,10 @@ import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.mordant.rendering.TextAlign.LEFT
 import com.github.ajalt.mordant.rendering.TextAlign.RIGHT
-import com.github.ajalt.mordant.table.Borders
-import com.github.ajalt.mordant.table.table
+import com.github.ajalt.mordant.table.grid
+import h2databasetool.cmd.ui.Styles.boldEmphasis
+import h2databasetool.cmd.ui.Styles.notice
+import h2databasetool.cmd.ui.Styles.softFocus
 import h2databasetool.cmd.ui.render
 import h2databasetool.env.EnvVar.H2TOOL_SERVER_PORT
 import h2databasetool.env.EnvVar.H2TOOL_BASE_DIR
@@ -17,15 +19,15 @@ import h2databasetool.env.EnvVar
 import h2databasetool.utils.add
 import h2databasetool.utils.echoMarkdown
 import h2databasetool.utils.file
-import h2databasetool.utils.resourceWithExtension
+import h2databasetool.utils.classResourceWithExtOf
 import org.h2.server.TcpServer
 import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
-class ServeDatabases : CliktCommand("serveDb") {
+class ServeDatabasesCommand : CliktCommand("serveDb") {
 
-    private val helpDoc = resourceWithExtension<ServeDatabases>("help.md")
+    private val helpDoc = classResourceWithExtOf<ServeDatabasesCommand>("help.md")
 
     override fun help(context: Context): String = helpDoc.readText()
 
@@ -102,19 +104,17 @@ class ServeDatabases : CliktCommand("serveDb") {
     }
 
     private fun echoStatus(server: TcpServer) = terminal.render {
-        table {
-            tableBorders = Borders.NONE
-            body {
-                fun r(name: String, value: Any?, valid: Boolean = true) {
-                    if (valid) row {
-                        cell("$name:") { align = RIGHT; padding { left = 1 }; cellBorders = Borders.NONE }
-                        cell(value) { align = LEFT; padding { left = 1 }; cellBorders = Borders.NONE }
-                    }
+        grid {
+            fun detailRow(name: String, value: String, valid: Boolean = true) {
+                if (valid) row {
+                    cell(softFocus(name)) { align = RIGHT }
+                    cell(notice(value)) { align = LEFT }
                 }
-                r("TCP server", server.url)
-                r("Base Dir", _baseDir)
-                r("TCP server password (generated)", _serverManagementPassword, managementPasswordGenerated)
             }
+            row { cell(boldEmphasis("Sever started up. Please note the following")) { columnSpan = 2 } }
+            detailRow("TCP Server: ", server.url)
+            detailRow("Base Directory: ", _baseDir.path)
+            detailRow("TCP Server Password: ", _serverManagementPassword, managementPasswordGenerated)
         }
     }
 

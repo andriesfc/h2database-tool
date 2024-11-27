@@ -4,8 +4,9 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.installMordant
 import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
+import h2databasetool.BuildInfo
 
-internal fun bootstrap() = object : CliktCommand("h2") {
+internal fun bootstrap() = object : CliktCommand(BuildInfo.APP_NAME) {
 
     init {
 

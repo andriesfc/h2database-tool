@@ -14,9 +14,9 @@ import java.sql.DriverManager
 import org.h2.jdbc.JdbcSQLSyntaxErrorException
 import org.h2.jdbcx.JdbcDataSource
 
-class InitializeDatabase : CliktCommand("initDb") {
+class InitializeDatabaseCommand : CliktCommand("initDb") {
 
-    private val helpDoc = resourceWithExtension<InitializeDatabase>("help.md")
+    private val helpDoc = classResourceWithExtOf<InitializeDatabaseCommand>("help.md")
 
     override fun help(context: Context): String = helpDoc.readText()
 
@@ -143,16 +143,17 @@ class InitializeDatabase : CliktCommand("initDb") {
         val datasource = datasource(jdbcUrl)
         fun initSchema(schema: String, schemaInitScript: File?) = doAction("Initializing schema $schema") {
             using(datasource.connection) {
+                val uri = metaData.url
                 val schemaIsPublic = schema.equals("public", ignoreCase = true)
                 val schemaName = if (quoted && !schemaIsPublic) "\"$schema\"" else schema
                 if (!schemaIsPublic) try {
                     executeScript("create schema $schemaName")
                 } catch (e: JdbcSQLSyntaxErrorException) {
                     if (!forceInitIfExists || !e.failedOnExistingSchema()) throw e
-                    executeScript("drop schema $schemaName cascade")
+                    executeScript("drop schema $schemaName cascade", uri)
                 }
                 if (schemaInitScript != null) {
-                    executeScript("set schema $schemaName")
+                    executeScript("set schema $schemaName", uri)
                     executeScript(schemaInitScript)
                 }
             }
