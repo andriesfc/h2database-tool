@@ -16,7 +16,7 @@ private enum class State {
     EndOfData
 }
 
-class ScripExceptionError internal constructor(
+class ScriptExecutionError internal constructor(
     val script: String,
     val lineNo: Int,
     cause: SQLException
@@ -30,13 +30,13 @@ class ScripExceptionError internal constructor(
     append('.')
 }, cause)
 
-@Throws(ScripExceptionError::class)
+@Throws(ScriptExecutionError::class)
 fun Connection.executeScript(sql: String, source: Any? = null) = executeScript(sql.reader(), source ?: summaryBuilderOf(sql))
 
-@Throws(ScripExceptionError::class)
+@Throws(ScriptExecutionError::class)
 fun Connection.executeScript(file: File) = executeScript(file.reader(), file)
 
-@Throws(ScripExceptionError::class)
+@Throws(ScriptExecutionError::class)
 fun Connection.executeScript(reader: Reader, script: Any = "snippet") {
     var lineNo = 0
     try {
@@ -79,7 +79,7 @@ fun Connection.executeScript(reader: Reader, script: Any = "snippet") {
             }
         }
     } catch (e: SQLException) {
-        throw ScripExceptionError(
+        throw ScriptExecutionError(
             script = (script as? BuildStatementSummary)?.summarizeStatement()
                 ?: (script as? String?)
                 ?: (script as? File)?.path

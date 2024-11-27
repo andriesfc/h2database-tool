@@ -7,7 +7,7 @@ import h2databasetool.env.EnvDefault
 import h2databasetool.env.EnvVar
 import org.h2.server.TcpServer.shutdown
 
-class ShutdownTcpServer : CliktCommand("shutdownDb") {
+class ShutdownTcpServer : CliktCommand("shutdowndb") {
 
     override fun help(context: Context): String = """
             |Shuts down a H2 database server running on TCP port and/or host.

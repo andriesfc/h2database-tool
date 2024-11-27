@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "jps-run",
+            "name": "h2tool",
+            "mainClass": "h2databasetool.app.H2ToolMain",
+            "module": "app",
+        },
+    ]
+}

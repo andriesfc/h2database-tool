@@ -16,15 +16,11 @@ dependencies {
     implementation(libs.clikt)
     implementation(libs.clikt.markdown)
     implementation(libs.h2)
-    implementation(libs.jdbi.core)
-    implementation(libs.jdbi.kotlin)
-    implementation(libs.sl4j.api)
-    implementation(libs.logback.classic)
 }
 
 defaultTasks("clean", "build", "installDist")
 
-val buildName = "Ygdrasil"
+val buildName = "ygdrasil"
 
 val generateBuildInfo by tasks.registering {
     group = "build"

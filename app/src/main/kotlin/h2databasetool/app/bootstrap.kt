@@ -2,14 +2,16 @@ package h2databasetool.app
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.installMordant
+import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
 import h2databasetool.BuildInfo
+import h2databasetool.utils.resourceOf
 
-internal fun bootstrap() = object : CliktCommand(BuildInfo.APP_NAME) {
+internal fun bootstrap(vararg commands: CliktCommand) = object : NoOpCliktCommand(BuildInfo.APP_NAME) {
 
     init {
-
         installMordant(force = true)
         configureContext {
             helpFormatter = { context ->
@@ -22,16 +24,13 @@ internal fun bootstrap() = object : CliktCommand(BuildInfo.APP_NAME) {
             }
             readEnvvarBeforeValueSource = true
         }
+        subcommands(*commands)
     }
 
-    override fun help(context: Context): String = """
-        H2 database tool
-        
-        A collection of useful scripts to operate H2 databases. 
-        """.trimIndent()
+    private val toolDoc = resourceOf("app.help.md")
+
+    override fun help(context: Context): String = toolDoc.readText()
 
     override val printHelpOnEmptyArgs: Boolean = true
 
-    override fun run() {
-    }
 }

@@ -1,22 +1,25 @@
-@file:Suppress("ConstPropertyName")
-
 package h2databasetool.cmd
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.*
+import h2databasetool.cmd.ui.Styles
 import h2databasetool.env.EnvDefault
 import h2databasetool.env.EnvVar
 import h2databasetool.utils.*
-import java.io.File
-import java.sql.DriverManager
-import org.h2.jdbc.JdbcSQLSyntaxErrorException
 import org.h2.jdbcx.JdbcDataSource
+import java.io.File
+import javax.sql.DataSource
 
-class InitializeDatabaseCommand : CliktCommand("initDb") {
+class InitializeDatabaseCommand : CliktCommand("initdb") {
 
-    private val helpDoc = classResourceWithExtOf<InitializeDatabaseCommand>("help.md")
+    private data class SchemaInitializer(
+        val schema: String,
+        val schemaInitScript: File?
+    )
+
+    private val helpDoc = resourceOfClassWithExt<InitializeDatabaseCommand>("help.md")
 
     override fun help(context: Context): String = helpDoc.readText()
 
@@ -54,27 +57,27 @@ class InitializeDatabaseCommand : CliktCommand("initDb") {
         envvar = EnvVar.H2TOOL_DATABASE_PASSWORD,
     ).default(EnvDefault.H2TOOL_USER_PASSWORD)
 
-    private val schemas by option(
-        "--init-schema", "-s",
-        metavar = "schema-name${SCHEMA_DELIMITER}optional-script-file"
-    ).help(
-        """
-        Optionally create one or more schemas.
-        Note that any script passed to the schema will be executed with in the context
-        of the schema.
-        """.trimIndent()
-    ).convert { spec ->
-        spec.withBeforeAndAfter(SCHEMA_DELIMITER) { before, after, _ ->
-            before to after?.file()
-        }
-    }.multiple()
-
-    private val initScript by option("--init", metavar = "script-file")
+    private val initScript by option("--init", "-i", metavar = "script-file")
         .help(
             """
             Scrip file to execute once the database has been successfully created.
             """.trimIndent()
         ).convert { it.file(canonical = true, absolute = true) }
+
+
+    private val schemaInitializers by option("--init-schema", "-s", metavar = "<schema [file]>")
+        .help(
+            """
+            Create one or more schemas, and optionally execute a supplied sql script file against the schema.
+            """.trimIndent()
+        ).varargValues(1, 2).transformAll() { optionArgs: List<List<String>> ->
+            optionArgs.map { a ->
+                SchemaInitializer(
+                    schema = a.first(),
+                    schemaInitScript = a.secondOrNull()?.let(::File)
+                )
+            }
+        }.unique()
 
     private val database by argument(
         name = "database-name", help = "Name of the new database to initialize."
@@ -110,21 +113,58 @@ class InitializeDatabaseCommand : CliktCommand("initDb") {
         }
 
         doAction("Initialize H2 database: __${jdbcUrl}__ (user=$user, password=$password)") {
-            DriverManager.getConnection(
+            datasource(
                 jdbcUrl,
-                user,
-                password
-            ).close()
+                testOnce = true
+            )
         }
 
-        processSchemaInitializers(jdbcUrl)
-        processInitializer(jdbcUrl)
-
+        doAction("Initialize data source:$jdbcUrl") {
+            val ds = datasource(jdbcUrl)
+            ds.processSchemaInitializers()
+            ds.processInitializer()
+        }
     }
 
-    private fun processInitializer(jdbcUrl: String) {
+
+    private fun reportScriptExecutionError(e: ScriptExecutionError) {
+        echo(e.message, err = true)
+    }
+
+    private fun DataSource.processInitializer() {
         val script = initScript ?: return
-        using(datasource(jdbcUrl).connection) { executeScript(script) }
+        val e = using(connection) { runCatching { executeScript(script) }.exceptionOrNull() }
+        when (e) {
+            is ScriptExecutionError -> reportScriptExecutionError(e)
+            null -> return
+            else -> throw e
+        }
+    }
+
+    private fun DataSource.processSchemaInitializers() {
+
+        if (schemaInitializers.isEmpty())
+            return
+
+        for ((schema, schemaScriptFile) in schemaInitializers) {
+            echo(buildString {
+                append("Initializing ${Styles.notice(schema)} schema")
+                schemaScriptFile?.also { append(" ", Styles.softFocus("(using script $schemaScriptFile)")) }
+                append('.')
+            })
+            using(connection) { executeScript("drop schema $schema if exists cascade") }
+            using(connection) { executeScript("create schema $schema") }
+            schemaScriptFile ?: continue
+            val e = using(connection) {
+                executeScript("set schema $schema")
+                runCatching { executeScript(schemaScriptFile) }.exceptionOrNull()
+            }
+            when (e) {
+                is ScriptExecutionError -> reportScriptExecutionError(e)
+                null -> continue
+                else -> throw e
+            }
+        }
     }
 
     private inline fun doAction(announcement: String, runAction: () -> Unit) {
@@ -132,42 +172,12 @@ class InitializeDatabaseCommand : CliktCommand("initDb") {
         if (!dryRun) runAction()
     }
 
-    private fun datasource(jdbcUrl: String) = JdbcDataSource().also { ds ->
+    private fun datasource(jdbcUrl: String, testOnce: Boolean = false) = JdbcDataSource().also { ds ->
         ds.setURL(jdbcUrl)
         ds.setUser(user)
         ds.setPassword(password)
-        ds.connection.close()
+        ds.takeIf { testOnce }?.connection?.close()
     }
 
-    private fun processSchemaInitializers(jdbcUrl: String) {
-        val datasource = datasource(jdbcUrl)
-        fun initSchema(schema: String, schemaInitScript: File?) = doAction("Initializing schema $schema") {
-            using(datasource.connection) {
-                val uri = metaData.url
-                val schemaIsPublic = schema.equals("public", ignoreCase = true)
-                val schemaName = if (quoted && !schemaIsPublic) "\"$schema\"" else schema
-                if (!schemaIsPublic) try {
-                    executeScript("create schema $schemaName")
-                } catch (e: JdbcSQLSyntaxErrorException) {
-                    if (!forceInitIfExists || !e.failedOnExistingSchema()) throw e
-                    executeScript("drop schema $schemaName cascade", uri)
-                }
-                if (schemaInitScript != null) {
-                    executeScript("set schema $schemaName", uri)
-                    executeScript(schemaInitScript)
-                }
-            }
-        }
-        schemas.forEach { (schema, schemaInitScript) -> initSchema(schema, schemaInitScript) }
-    }
-
-    companion object {
-        private const val SCHEMA_DELIMITER = ":"
-        private fun JdbcSQLSyntaxErrorException.failedOnExistingSchema(): Boolean {
-            val e = message?.lowercase() ?: return false
-            val a = e.indexOf("schema").takeUnless { it == -1 } ?: return false
-            val b = e.indexOf("already exists").takeUnless { it == -1 || it < a } ?: return false
-            return true
-        }
-    }
 }
+

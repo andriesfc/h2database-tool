@@ -11,23 +11,22 @@ import h2databasetool.cmd.ui.Styles.boldEmphasis
 import h2databasetool.cmd.ui.Styles.notice
 import h2databasetool.cmd.ui.Styles.softFocus
 import h2databasetool.cmd.ui.render
-import h2databasetool.env.EnvVar.H2TOOL_SERVER_PORT
-import h2databasetool.env.EnvVar.H2TOOL_BASE_DIR
-import h2databasetool.env.EnvVar.H2TOOL_TCP_SERVER_ENABLE_VIRTUAL_THREADS
 import h2databasetool.env.EnvDefault
 import h2databasetool.env.EnvVar
+import h2databasetool.env.EnvVar.H2TOOL_BASE_DIR
+import h2databasetool.env.EnvVar.H2TOOL_SERVER_PORT
+import h2databasetool.env.EnvVar.H2TOOL_TCP_SERVER_ENABLE_VIRTUAL_THREADS
 import h2databasetool.utils.add
-import h2databasetool.utils.echoMarkdown
+import h2databasetool.utils.resourceOfClassWithExt
 import h2databasetool.utils.file
-import h2databasetool.utils.classResourceWithExtOf
 import org.h2.server.TcpServer
 import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
-class ServeDatabasesCommand : CliktCommand("serveDb") {
+class ServeDatabasesCommand : CliktCommand("servedb") {
 
-    private val helpDoc = classResourceWithExtOf<ServeDatabasesCommand>("help.md")
+    private val helpDoc = resourceOfClassWithExt<ServeDatabasesCommand>("help.md")
 
     override fun help(context: Context): String = helpDoc.readText()
 
@@ -38,10 +37,6 @@ class ServeDatabasesCommand : CliktCommand("serveDb") {
     private val enableVirtualThreads by option(envvar = H2TOOL_TCP_SERVER_ENABLE_VIRTUAL_THREADS)
         .help("Use virtual threads when client connects.")
         .flag(default = EnvDefault.H2TOOL_TCP_SERVER_ENABLE_VIRTUAL_THREADS)
-
-    private val dryRun by option()
-        .help("Only prints out messages, but does not expose amy database on a port.")
-        .flag()
 
     private val baseDir by option("--data-dir", metavar = "H2_DATA_DIRECTORY", envvar = H2TOOL_BASE_DIR)
         .help("Location of database(s)")
@@ -70,13 +65,8 @@ class ServeDatabasesCommand : CliktCommand("serveDb") {
         envvar = EnvVar.H2TOOL_PERMIT_DB_CREATION
     ).flag(
         default = EnvDefault.H2TOOL_PERMIT_DB_CREATION,
-        defaultForHelp = EnvVar.H2TOOL_SERVER_PASSWORD.toString()
+        defaultForHelp = EnvVar.H2TOOL_SERVER_PASSWORD
     ).help("Allow clients connecting to create their own databases.")
-
-    private inline fun doOperation(announcement: String, operation: () -> Unit) {
-        echoMarkdown(announcement)
-        if (!dryRun) operation()
-    }
 
     private lateinit var _serverManagementPassword: String
     private lateinit var _baseDir: File

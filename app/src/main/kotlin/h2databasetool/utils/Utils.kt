@@ -22,4 +22,7 @@ inline fun <T> String.withBeforeAndAfter(
 }
 
 fun <T> Collection<T>.second(): T = iterator().run { next(); next() }
-
+fun <T> Collection<T>.secondOrNull(): T? = iterator().run {
+    next()
+    if (hasNext()) next() else null
+}
