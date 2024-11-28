@@ -5,8 +5,7 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.*
 import h2databasetool.cmd.ui.Styles
-import h2databasetool.env.EnvDefault
-import h2databasetool.env.EnvVar
+import h2databasetool.env.env
 import h2databasetool.utils.*
 import org.h2.jdbcx.JdbcDataSource
 import java.io.File
@@ -23,9 +22,9 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
 
     override fun help(context: Context): String = helpDoc.readText()
 
-    private val dataDir by option(metavar = "H2_DATA_DIRECTORY", envvar = EnvVar.H2TOOL_BASE_DIR)
+    private val dataDir by option(metavar = "h2 data directory", envvar = env.H2TOOL_DATA_DIR.envvar)
         .help("Location of database")
-        .default(EnvDefault.H2TOOL_BASE_DIR)
+        .default(env.H2TOOL_DATA_DIR.default)
 
     private val dryRun: Boolean by option("--dry-run")
         .flag(default = false)
@@ -37,25 +36,25 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
 
     private val quoted by option(
         "--quote-schema-name",
-        envvar = EnvVar.H2TOOL_ALWAYS_QUOTE_SCHEMA
+        envvar = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.envvar,
     ).help("Always quote schema names").flag(
-        default = EnvDefault.H2TOOL_ALWAYS_QUOTE_SCHEMA,
-        defaultForHelp = "${EnvDefault.H2TOOL_ALWAYS_QUOTE_SCHEMA}"
+        default = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.default,
+        defaultForHelp = "${env.H2TOOL_ALWAYS_QOUTE_SCHEMA.default}"
     )
 
     private val user by option(
         "--user",
         help = "JDBC user name",
         metavar = "name",
-        envvar = EnvVar.H2TOOL_DATABASE_USER,
-    ).default(EnvDefault.H2TOOL_DATABASE_USER)
+        envvar = env.H2TOOL_DATABASE_USER.envvar,
+    ).default(env.H2TOOL_DATABASE_USER.default)
 
     private val password by option(
         "--password",
         metavar = "secret",
         help = "JDBC password (please change this if need be).",
-        envvar = EnvVar.H2TOOL_DATABASE_PASSWORD,
-    ).default(EnvDefault.H2TOOL_USER_PASSWORD)
+        envvar = env.H2TOOL_DATABASE_PASSWORD.envvar,
+    ).default(env.H2TOOL_DATABASE_PASSWORD.default)
 
     private val initScript by option("--init", "-i", metavar = "script-file")
         .help(
