@@ -1,4 +1,4 @@
-package h2databasetool.utils
+package h2databasetool.commons
 
 fun <C, T> C.add(item: T, vararg more: T) where C : MutableCollection<in T> {
     add(item)
@@ -16,3 +16,4 @@ fun <T> Collection<T>.secondOrNull(): T? = iterator().run {
 }
 
 fun <T> Array<T>.second(): T = iterator().run { next(); next() }
+fun <T> Collection<T>.second(): T = iterator().run { next(); next() }

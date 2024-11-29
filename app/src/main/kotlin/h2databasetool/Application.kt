@@ -1,6 +1,4 @@
-@file:JvmName("H2ToolMain")
-
-package h2databasetool.app
+package h2databasetool
 
 import com.github.ajalt.clikt.core.main
 import h2databasetool.cmd.*

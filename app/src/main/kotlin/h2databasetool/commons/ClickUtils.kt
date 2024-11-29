@@ -1,4 +1,4 @@
-package h2databasetool.utils
+package h2databasetool.commons
 
 import com.github.ajalt.clikt.core.BaseCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage

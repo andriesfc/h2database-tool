@@ -6,7 +6,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.*
 import h2databasetool.cmd.ui.Styles
 import h2databasetool.env.env
-import h2databasetool.utils.*
+import h2databasetool.commons.*
 import org.h2.jdbcx.JdbcDataSource
 import java.io.File
 import javax.sql.DataSource
@@ -22,7 +22,7 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
 
     override fun help(context: Context): String = helpDoc.readText()
 
-    private val dataDir by option(metavar = "h2 data directory", envvar = env.H2TOOL_DATA_DIR.envvar)
+    private val dataDir by option(metavar = "h2 data directory", envvar = env.H2TOOL_DATA_DIR.variable)
         .help("Location of database")
         .default(env.H2TOOL_DATA_DIR.default)
 
@@ -36,7 +36,7 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
 
     private val quoted by option(
         "--quote-schema-name",
-        envvar = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.envvar,
+        envvar = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.variable,
     ).help("Always quote schema names").flag(
         default = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.default,
         defaultForHelp = "${env.H2TOOL_ALWAYS_QOUTE_SCHEMA.default}"
@@ -46,14 +46,14 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
         "--user",
         help = "JDBC user name",
         metavar = "name",
-        envvar = env.H2TOOL_DATABASE_USER.envvar,
+        envvar = env.H2TOOL_DATABASE_USER.variable,
     ).default(env.H2TOOL_DATABASE_USER.default)
 
     private val password by option(
         "--password",
         metavar = "secret",
         help = "JDBC password (please change this if need be).",
-        envvar = env.H2TOOL_DATABASE_PASSWORD.envvar,
+        envvar = env.H2TOOL_DATABASE_PASSWORD.variable,
     ).default(env.H2TOOL_DATABASE_PASSWORD.default)
 
     private val initScript by option("--init", "-i", metavar = "script-file")

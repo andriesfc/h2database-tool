@@ -8,7 +8,7 @@ plugins {
 }
 
 application {
-    mainClass = "h2databasetool.app.H2ToolMain"
+    mainClass = "h2databasetool.ApplicationKt"
     applicationName = "h2"
 }
 
@@ -32,7 +32,7 @@ val generateBuildInfo by tasks.registering {
             """
             package h2databasetool
             
-            object BuildInfo {
+            data object BuildInfo {
                 const val APP_DESCRIPTION = "${project.description}"
                 const val APP_NAME = "${application.applicationName}"
                 const val BUILD_DATE = "${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}"
