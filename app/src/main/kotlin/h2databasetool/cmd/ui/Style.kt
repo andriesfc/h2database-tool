@@ -4,15 +4,29 @@ import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextColors.Companion.rgb
 import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.ajalt.mordant.rendering.TextStyles.bold
+import com.github.ajalt.mordant.rendering.TextStyles.underline
+import com.github.ajalt.mordant.rendering.TextStyles.italic
 
-data object Styles {
+data object Style {
 
     data object Colors {
         val illuminatingEmerald = rgb("#359570FF")
+        val chartreuse = rgb("#B0FC38")
+        val cerulean = rgb("#0492C2")
     }
 
     val boldEmphasis = bold
     val notice = Colors.illuminatingEmerald + bold
     val softFocus = TextStyles.dim
     val softFocusError = softFocus + TextColors.yellow + TextStyles.italic
+
+    val h1 = (underline + Colors.cerulean + bold).let { styledText ->
+        { s: String -> styledText(s.uppercase()) }
+    }
+
+    val h2 = fun(heading: String) = (Colors.chartreuse + bold)(heading)
+
+    val info1 = fun(s: String) = (Colors.illuminatingEmerald + italic)(s)
+
 }
+

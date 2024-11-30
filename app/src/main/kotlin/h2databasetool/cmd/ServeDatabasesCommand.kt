@@ -8,65 +8,71 @@ import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.rendering.TextAlign.LEFT
 import com.github.ajalt.mordant.rendering.TextAlign.RIGHT
 import com.github.ajalt.mordant.table.grid
-import h2databasetool.cmd.ui.Styles.boldEmphasis
-import h2databasetool.cmd.ui.Styles.notice
-import h2databasetool.cmd.ui.Styles.softFocus
-import h2databasetool.cmd.ui.renderOn
-import h2databasetool.env.env
-import h2databasetool.commons.NL
+import h2databasetool.cmd.ui.Style.boldEmphasis
+import h2databasetool.cmd.ui.Style.notice
+import h2databasetool.cmd.ui.Style.softFocus
+import h2databasetool.cmd.ui.render
+import h2databasetool.commons.terminal.NL
 import h2databasetool.commons.add
 import h2databasetool.commons.file
-import h2databasetool.commons.resourceOfClassWithExt
+import h2databasetool.env.Env
 import org.h2.server.TcpServer
 import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
-class ServeDatabasesCommand : CliktCommand("servedb") {
+class ServeDatabasesCommand : CliktCommand("serveDb") {
 
-    private val helpDoc = resourceOfClassWithExt<ServeDatabasesCommand>("help.md")
+    override fun help(context: Context): String = """
+        Serves database from the base directory.
+    """.trimIndent()
 
-    override fun help(context: Context): String = helpDoc.readText()
-
-    private val trace by option("--trace", envvar = env.H2TOOL_TRACE_CALLS.variable)
+    private val trace by option("--trace", envvar = Env.H2TOOL_TRACE_CALLS.variable)
         .help("Trace client calls and dumps output to a dot-trace file.")
-        .flag(default = env.H2TOOL_TRACE_CALLS.default, defaultForHelp = env.H2TOOL_TRACE_CALLS.default.toString())
+        .flag(default = Env.H2TOOL_TRACE_CALLS.default, defaultForHelp = Env.H2TOOL_TRACE_CALLS.default.toString())
 
-    private val enableVirtualThreads by option(envvar = env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.variable)
+    private val enableVirtualThreads by option(envvar = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.variable)
         .help("Use virtual threads when client connects.")
-        .flag(default = env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.default)
+        .flag(default = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.default)
 
-    private val baseDir by option("--data-dir", metavar = "H2_DATA_DIRECTORY", envvar = env.H2TOOL_DATA_DIR.variable)
+    private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2TOOL_DATA_DIR.variable)
         .help("Location of database(s)")
-        .default(env.H2TOOL_DATA_DIR.default)
+        .default(Env.H2TOOL_DATA_DIR.default)
 
-    private val allowOthers by option("--allow-others", envvar = env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.variable)
+    private val allowOthers by option("--allow-others", envvar = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.variable)
         .help("Allow connections from other hosts to databases.")
         .flag(
-            default = env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default,
-            defaultForHelp = env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default.toString()
+            default = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default,
+            defaultForHelp = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default.toString()
         )
+
+    private val bindAddress by option(
+        "--bind-address",
+        metavar = "host address",
+        envvar = Env.H2TOOL_SERVER_HOST.variable
+    ).default(Env.H2TOOL_SERVER_HOST.default)
+        .help("The network address the server should bind to.")
 
     private val managementPassword by option(
         "--management-password",
-        metavar = "TCP management password",
-        envvar = env.H2TOOL_SERVER_PASSWORD.variable
+        metavar = "server management password",
+        envvar = Env.H2TOOL_SERVER_PASSWORD.variable
     ).help("Protect the exposed port on the lan with a password (if not set a random password will be generated).")
 
     private val port by option(
-        "--port",
-        metavar = env.H2TOOL_SERVER_PORT.variable,
-        envvar = env.H2TOOL_SERVER_PORT.variable
+        "--bind-port",
+        metavar = Env.H2TOOL_SERVER_PORT.variable,
+        envvar = Env.H2TOOL_SERVER_PORT.variable
     ).convert { it.toUShort() }
-        .default(env.H2TOOL_SERVER_PORT.default)
+        .default(Env.H2TOOL_SERVER_PORT.default)
         .help("Network port on which to serve the database.")
 
     private val autoCreateDbIfNotExists by option(
         "--permit-remote-db-creation",
-        envvar = env.H2TOOL_SERVER_PERMIT_CREATE_DB.variable
+        envvar = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.variable
     ).flag(
-        default = env.H2TOOL_SERVER_PERMIT_CREATE_DB.default,
-        defaultForHelp = env.H2TOOL_SERVER_PERMIT_CREATE_DB.default.toString()
+        default = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.default,
+        defaultForHelp = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.default.toString()
     ).help("Allow clients connecting to create their own databases.")
 
     private lateinit var _serverManagementPassword: String
@@ -90,6 +96,7 @@ class ServeDatabasesCommand : CliktCommand("servedb") {
         }.map(Any::toString).toTypedArray()
 
     override fun run() {
+        Env.H2TOOL_SERVER_HOST(bindAddress)
         val server = TcpServer()
         server.init(*prepareServerArgs())
         server.start()
@@ -97,14 +104,24 @@ class ServeDatabasesCommand : CliktCommand("servedb") {
         server.listen()
     }
 
-    private fun showDetails(server: TcpServer) = renderOn(terminal) {
+    private fun showDetails(server: TcpServer) = render(terminal) {
+
+        val details = buildList<Pair<String, String>> {
+            add(
+                "Server url:" to server.url,
+                "Server base directory:" to _baseDir.path,
+                "Server allowing clients to create database:" to if (autoCreateDbIfNotExists) "yes" else "no",
+                "Server bind address:" to bindAddress,
+                "Server accepts network requests:" to if (allowOthers) "yes" else "no",
+                "Server using virtual threads:" to if (enableVirtualThreads) "yes" else "no",
+            )
+            if (managementPasswordGenerated) add(
+                "Server shutdown password (generated):" to _serverManagementPassword,
+            )
+            sortBy { (label, _) -> label.lowercase() }
+        }
+
         grid {
-            fun detail(name: String, value: String, visible: Boolean = true) {
-                if (visible) row {
-                    cell(softFocus(name)) { align = RIGHT }
-                    cell(notice(value)) { align = LEFT }
-                }
-            }
             row {
                 cell(boldEmphasis("Sever started up.${NL}Please note the following:")) {
                     columnSpan = 2
@@ -115,17 +132,17 @@ class ServeDatabasesCommand : CliktCommand("servedb") {
                     top = 1
                 }
             }
-            detail("Server url: ", server.url)
-            detail("Server base directory: ", _baseDir.path)
-            detail("Server allowing clients to create databases: ", if (autoCreateDbIfNotExists) "yes" else "no")
-            detail("Server accepts network request: ", if (allowOthers) "yes" else "no")
-            detail("Server using virtual threads: ", if (enableVirtualThreads) "yes" else "no")
-            detail("Server shutdown password (generated): ", _serverManagementPassword, managementPasswordGenerated)
+            details.forEach { (label, value) ->
+                row {
+                    cell(softFocus(label)) { align = RIGHT }
+                    cell(notice(value)) { align = LEFT }
+                }
+            }
         }
     }
 
     private fun generateManagementPassword() =
-        env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE()
+        Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE()
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 }

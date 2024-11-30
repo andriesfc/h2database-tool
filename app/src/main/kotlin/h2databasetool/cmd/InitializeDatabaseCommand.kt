@@ -4,27 +4,54 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.*
-import h2databasetool.cmd.ui.Styles
-import h2databasetool.env.env
+import h2databasetool.BuildInfo
+import h2databasetool.cmd.ui.Style
+import h2databasetool.cmd.ui.Style.h1
+import h2databasetool.env.Env
 import h2databasetool.commons.*
+import h2databasetool.commons.terminal.echoMarkdown
+import h2databasetool.commons.terminal.fail
 import org.h2.jdbcx.JdbcDataSource
 import java.io.File
 import javax.sql.DataSource
 
-class InitializeDatabaseCommand : CliktCommand("initdb") {
+class InitializeDatabaseCommand : CliktCommand("initDb") {
 
     private data class SchemaInitializer(
         val schema: String,
         val schemaInitScript: File?
     )
 
-    private val helpDoc = resourceOfClassWithExt<InitializeDatabaseCommand>("help.md")
+    override fun help(context: Context): String {
+        val cmd = Style.boldEmphasis(BuildInfo.APP_NAME)
+        return """
+             Create a new database in the specified base directory.
+             
+             ${h1("EXAMPLES")}
+             
+            1. Create a coin collection
+               ```shell
+               $cmd initdb mycoindb
+               ```
+            2. Create my business database with a customer and stock schemas.
+               ```shell
+               $cmd initdb mybizdb --init-scchema customer --init-schema stock 
+               ```
+            3. Force the re-creation of schemas the business database
+               ```shell
+               $cmd initdb mybizdb --init-scchema customer --init-schema stock --force
+               ```
+            4. Initialze a database named __fintrack__ with a schema called expenses which needs to be set up
+               with a script `../templaes/expenses-template.sql` 
+               ```shell
+               $cmd initdb fintrack --init-scchema expenses ../templaes/expenses-template.sql
+               ```
+            """.trimIndent()
+    }
 
-    override fun help(context: Context): String = helpDoc.readText()
-
-    private val dataDir by option(metavar = "h2 data directory", envvar = env.H2TOOL_DATA_DIR.variable)
+    private val dataDir by option(metavar = "H2 data directory", envvar = Env.H2TOOL_DATA_DIR.variable)
         .help("Location of database")
-        .default(env.H2TOOL_DATA_DIR.default)
+        .default(Env.H2TOOL_DATA_DIR.default)
 
     private val dryRun: Boolean by option("--dry-run")
         .flag(default = false)
@@ -36,25 +63,25 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
 
     private val quoted by option(
         "--quote-schema-name",
-        envvar = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.variable,
+        envvar = Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.variable,
     ).help("Always quote schema names").flag(
-        default = env.H2TOOL_ALWAYS_QOUTE_SCHEMA.default,
-        defaultForHelp = "${env.H2TOOL_ALWAYS_QOUTE_SCHEMA.default}"
+        default = Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.default,
+        defaultForHelp = "${Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.default}"
     )
 
     private val user by option(
         "--user",
         help = "JDBC user name",
         metavar = "name",
-        envvar = env.H2TOOL_DATABASE_USER.variable,
-    ).default(env.H2TOOL_DATABASE_USER.default)
+        envvar = Env.H2TOOL_DATABASE_USER.variable,
+    ).default(Env.H2TOOL_DATABASE_USER.default)
 
     private val password by option(
         "--password",
         metavar = "secret",
         help = "JDBC password (please change this if need be).",
-        envvar = env.H2TOOL_DATABASE_PASSWORD.variable,
-    ).default(env.H2TOOL_DATABASE_PASSWORD.default)
+        envvar = Env.H2TOOL_DATABASE_PASSWORD.variable,
+    ).default(Env.H2TOOL_DATABASE_PASSWORD.default)
 
     private val initScript by option("--init", "-i", metavar = "script-file")
         .help(
@@ -147,8 +174,8 @@ class InitializeDatabaseCommand : CliktCommand("initdb") {
 
         for ((schema, schemaScriptFile) in schemaInitializers) {
             echo(buildString {
-                append("Initializing ${Styles.notice(schema)} schema")
-                schemaScriptFile?.also { append(" ", Styles.softFocus("(using script $schemaScriptFile)")) }
+                append("Initializing ${Style.notice(schema)} schema")
+                schemaScriptFile?.also { append(" ", Style.softFocus("(using script $schemaScriptFile)")) }
                 append('.')
             })
             using(connection) { executeScript("drop schema $schema if exists cascade") }

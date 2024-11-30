@@ -5,24 +5,28 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
-import h2databasetool.env.env
-import h2databasetool.commons.resourceOfClassWithExt
+import h2databasetool.cmd.ui.Style
+import h2databasetool.env.Env
 import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 
-class GenerateAdminPasswordCommand : Runnable, CliktCommand("adminpassword") {
+class GenerateAdminPasswordCommand : Runnable, CliktCommand("generateAdminPassword") {
 
-    private val helpDoc = resourceOfClassWithExt<GenerateAdminPasswordCommand>("help.md")
 
-    override fun help(context: Context): String = helpDoc.readText()
+    override fun help(context: Context): String =
+        """ |Generates a random number of bytes using s secure random generator.
+            |
+            |> **${Style.notice("NOTE:")}** By default, the generator uses ${Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.default} bits
+            |> size.    
+        """.trimMargin()
 
-    private val bits by option("--bits", "-b", envvar = env.H2TOOL_ADMIN_PASSWORD_BITS.variable)
+    private val bits by option("--bits", "-b", envvar = Env.H2TOOL_ADMIN_PASSWORD_BITS.variable)
         .choice(*sizeChoices)
         .help("Number of bits size of generated password")
 
     override fun run() {
 
-        val password = (bits?.toInt() ?: env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE())
+        val password = (bits?.toInt() ?: Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE())
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 
@@ -30,7 +34,7 @@ class GenerateAdminPasswordCommand : Runnable, CliktCommand("adminpassword") {
     }
 
     companion object {
-        private val sizeChoices = env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
+        private val sizeChoices = Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
             .permittedSizes
             .sorted()
             .map { "$it" to it }
