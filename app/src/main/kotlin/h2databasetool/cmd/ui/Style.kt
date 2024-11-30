@@ -18,7 +18,8 @@ data object Style {
     val boldEmphasis = bold
     val notice = Colors.illuminatingEmerald + bold
     val softFocus = TextStyles.dim
-    val softFocusError = softFocus + TextColors.yellow + TextStyles.italic
+    val softFocusError = softFocus + TextColors.yellow + italic
+    val softYellowFocus = softFocus + TextColors.brightYellow
 
     val h1 = (underline + Colors.cerulean + bold).let { styledText ->
         { s: String -> styledText(s.uppercase()) }

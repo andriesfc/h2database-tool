@@ -8,6 +8,9 @@ import h2databasetool.commons.terminal.NL
 
 sealed class Env<out T : Any>(val variable: String, open val default: T, val description: String) {
 
+    val isActive: Boolean get() = System.getenv(variable) != null
+    fun get(): String = System.getenv(variable)
+
     object H2TOOL_ADMIN_PASSWORD_BITS : Env<UShort>(
         "H2TOOL_ADMIN_PASSWORD_BITS", 16u,
         "Bit size used to generate admin passwords."
@@ -106,5 +109,27 @@ sealed class Env<out T : Any>(val variable: String, open val default: T, val des
                 else -> notPermitted(fromEnv)
             }
         }
+    }
+
+    companion object {
+        private val entries by lazy {
+            listOf(
+                H2TOOL_ADMIN_PASSWORD_BITS,
+                H2TOOL_ALWAYS_QUOTE_SCHEMA,
+                H2TOOL_DATA_DIR,
+                H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS,
+                H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS,
+                H2TOOL_SERVER_HOST,
+                H2TOOL_SERVER_PERMIT_CREATE_DB,
+                H2TOOL_SERVER_PORT,
+                H2TOOL_DATABASE_USER,
+                H2TOOL_DATABASE_PASSWORD,
+                H2TOOL_TRACE_CALLS,
+                H2TOOL_SERVER_PASSWORD,
+                H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
+            ).sortedBy { env -> env.variable.uppercase() }
+        }
+
+        fun entries() = entries
     }
 }

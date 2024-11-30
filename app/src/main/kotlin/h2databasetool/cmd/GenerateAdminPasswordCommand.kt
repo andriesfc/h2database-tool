@@ -10,7 +10,7 @@ import h2databasetool.env.Env
 import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 
-class GenerateAdminPasswordCommand : Runnable, CliktCommand("generateAdminPassword") {
+class GenerateAdminPasswordCommand : Runnable, CliktCommand(NAME) {
 
 
     override fun help(context: Context): String =
@@ -34,6 +34,7 @@ class GenerateAdminPasswordCommand : Runnable, CliktCommand("generateAdminPasswo
     }
 
     companion object {
+        private const val NAME = "generateAdminPassword"
         private val sizeChoices = Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
             .permittedSizes
             .sorted()

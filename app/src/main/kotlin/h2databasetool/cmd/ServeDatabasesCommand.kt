@@ -21,7 +21,7 @@ import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
-class ServeDatabasesCommand : CliktCommand("serveDb") {
+class ServeDatabasesCommand : CliktCommand(NAME) {
 
     override fun help(context: Context): String = """
         Serves database from the base directory.
@@ -145,5 +145,9 @@ class ServeDatabasesCommand : CliktCommand("serveDb") {
         Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE()
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
+
+    companion object {
+        const val NAME = "serveDb"
+    }
 }
 

@@ -15,15 +15,19 @@ import org.h2.jdbcx.JdbcDataSource
 import java.io.File
 import javax.sql.DataSource
 
-class InitializeDatabaseCommand : CliktCommand("initDb") {
+class InitializeDatabaseCommand : CliktCommand(NAME) {
+
+    companion object {
+        const val NAME = "initDb"
+    }
 
     private data class SchemaInitializer(
         val schema: String,
-        val schemaInitScript: File?
+        val schemaInitScript: File?,
     )
 
     override fun help(context: Context): String {
-        val cmd = Style.boldEmphasis(BuildInfo.APP_NAME)
+        val cmd = Style.boldEmphasis(BuildInfo.APP_EXE)
         return """
              Create a new database in the specified base directory.
              
@@ -31,20 +35,20 @@ class InitializeDatabaseCommand : CliktCommand("initDb") {
              
             1. Create a coin collection
                ```shell
-               $cmd initdb mycoindb
+               $cmd initDb myCoinDb
                ```
             2. Create my business database with a customer and stock schemas.
                ```shell
-               $cmd initdb mybizdb --init-scchema customer --init-schema stock 
+               $cmd initDb myBizDb --init-schema customer --init-schema stock 
                ```
             3. Force the re-creation of schemas the business database
                ```shell
-               $cmd initdb mybizdb --init-scchema customer --init-schema stock --force
+               $cmd initDb myBizDb --init-schema customer --init-schema stock --force
                ```
-            4. Initialze a database named __fintrack__ with a schema called expenses which needs to be set up
-               with a script `../templaes/expenses-template.sql` 
+            4. Initialize a database named __finTackDb__ with a schema called expenses which needs to be set up
+               with a script `../templates/expenses-template.sql` 
                ```shell
-               $cmd initdb fintrack --init-scchema expenses ../templaes/expenses-template.sql
+               $cmd initDb finTrackDb --init-schema expenses ../template/expenses-template.sql
                ```
             """.trimIndent()
     }

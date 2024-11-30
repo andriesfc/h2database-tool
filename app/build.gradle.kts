@@ -34,7 +34,7 @@ val generateBuildInfo by tasks.registering {
             
             data object BuildInfo {
                 const val APP_DESCRIPTION = "${project.description}"
-                const val APP_NAME = "${application.applicationName}"
+                const val APP_EXE = "${application.applicationName}"
                 const val BUILD_DATE = "${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}"
                 const val BUILD_OS = "${System.getProperty("os.name")} (${System.getProperty("os.version")})"
                 const val VERSION = "${project.version}"

@@ -7,10 +7,12 @@ import h2databasetool.cmd.InitializeDatabaseCommand
 import h2databasetool.cmd.ServeDatabasesCommand
 
 fun main(args: Array<String>) =
-    bootstrap(
-        AboutToolCommand(),
-        InitializeDatabaseCommand(),
-        ServeDatabasesCommand(),
-        GenerateAdminPasswordCommand(),
-    ) { appHelpDoc(it, BuildInfo.APP_NAME) }.main(args)
+    Bootstrap(
+        listOf(
+            AboutToolCommand(),
+            InitializeDatabaseCommand(),
+            ServeDatabasesCommand(),
+            GenerateAdminPasswordCommand()
+        )
+    ).main(args)
 
