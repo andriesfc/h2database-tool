@@ -6,18 +6,18 @@ import com.github.ajalt.clikt.core.CliktError
 import h2databasetool.cmd.ui.Style
 import h2databasetool.commons.line
 import h2databasetool.commons.terminal.NL
+import h2databasetool.env.Env.Companion._entries
 
 /**
  * All environment values applicable to setting up defaults for this tool.
  *
  * @param T The value type.
+ * @param T Type of default.
  * @property envVariable The environment variable used to configure
  *    defaults with.
  * @property default The value to use in the absence of an environment
  *    variable, or an option.
  * @property description A human friendly description (used in help).
- *
- * @param T Type of default.
  */
 sealed class Env<out T : Any>(
     val envVariable: String,
@@ -36,7 +36,7 @@ sealed class Env<out T : Any>(
     fun get(): String = System.getenv(envVariable)
 
     data object H2TOOL_SERVER_FORCE_SHUTDOWN : Env<Boolean>(
-        "H2TOOL_SERVER_FORCE_SHUTDOWN",
+        "hen",
         false,
         "Attempts to force shutdown if the first attempt failed"
     )
@@ -146,11 +146,11 @@ sealed class Env<out T : Any>(
     companion object {
 
         /**
-         * Build the list of entries on lazily otherwise the compiler croaks with
-         * a NPE.
-         *
-         * > **VERY IMPORTANT**: This is a hand-coded list because we need to avoid reflection
-         * > as much as possible on account of using the Graal-toolchain.
+         * Build the list of entries on lazily otherwise the compiler croaks with a
+         * NPE.
+         * > **VERY IMPORTANT**: This is a hand-coded list because we need to avoid
+         * > reflection as much as possible on account of using the
+         * > Graal-toolchain.
          *
          * todo: **Please report this upstream as bug.**
          */
@@ -175,8 +175,8 @@ sealed class Env<out T : Any>(
 
         /**
          * A sorted list of `Env` entries.
-         *
-         * > **Important**: Remember to add any new object instance to the [_entries] list.
+         * > **Important**: Remember to add any new object instance to the
+         * > [_entries] list.
          *
          * @see _entries
          */

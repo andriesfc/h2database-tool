@@ -22,7 +22,7 @@ class AboutToolCommand : CliktCommand(NAME) {
     }
 
     override fun help(context: Context): String {
-        return "Displays interesting information about this H2 tool"
+        return "Displays interesting information about configuration and this tool."
     }
 
     override fun run() {
@@ -33,6 +33,7 @@ class AboutToolCommand : CliktCommand(NAME) {
             BuildInfo.BUILD_DATE to "Build Date:",
             BuildInfo.BUILD_OS to "Build OS:",
             LocalDate.now().toString() to "Current Date:",
+            BuildInfo.H2_LIB_VERSION to "H2 version:"
         ).sortedBy { (_, label) -> label.lowercase() }
         render(terminal) {
             verticalLayout {
@@ -59,7 +60,7 @@ class AboutToolCommand : CliktCommand(NAME) {
                         }
                     }
                     row {
-                        cell(softYellowFocus("System Environment Settings")) {
+                        cell(softYellowFocus("System Environment Defaults")) {
                             columnSpan = 2
                             align = TextAlign.CENTER
                         }
@@ -70,15 +71,12 @@ class AboutToolCommand : CliktCommand(NAME) {
                     }
                     Env.entries().filter { env -> env.isActive }.forEach { env ->
                         row {
-                            cell(softFocus(env.envVariable)) { align = TextAlign.RIGHT }
+                            cell(softFocus("${env.envVariable}:")) { align = TextAlign.RIGHT }
                             cell(notice(env.get())) { align = TextAlign.LEFT }
                         }
                     }
                 })
-
             }
-
-
         }
     }
 }

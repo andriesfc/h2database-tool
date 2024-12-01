@@ -1,3 +1,4 @@
+import buildlogic.catalog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -22,6 +23,7 @@ dependencies {
 tasks.named("build").configure { dependsOn("assemble", "installDist", "test") }
 
 val buildName = "arbolis"
+val h2LibVersion = catalog.findVersion("h2").get().requiredVersion
 
 val generateBuildInfo by tasks.registering {
     group = "build"
@@ -29,8 +31,9 @@ val generateBuildInfo by tasks.registering {
     val output = layout.buildDirectory.dir("generated/src/kotlin/h2databasetool")
     outputs.dir(output)
     doLast {
-        output.get().asFile.resolve("BuildInfo.kt").writeText(
-            """
+        val h2Version =
+            output.get().asFile.resolve("BuildInfo.kt").writeText(
+                """
             package h2databasetool
             
             data object BuildInfo {
@@ -40,9 +43,10 @@ val generateBuildInfo by tasks.registering {
                 const val BUILD_OS = "${System.getProperty("os.name")} (${System.getProperty("os.version")})"
                 const val VERSION = "${project.version}"
                 const val VERSION_NAME = "$buildName"
+                const val H2_LIB_VERSION = "$h2LibVersion"
             }
             """.trimIndent()
-        )
+            )
     }
 }
 
