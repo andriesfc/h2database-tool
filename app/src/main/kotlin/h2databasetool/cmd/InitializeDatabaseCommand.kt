@@ -53,7 +53,7 @@ class InitializeDatabaseCommand : CliktCommand(NAME) {
             """.trimIndent()
     }
 
-    private val dataDir by option(metavar = "H2 data directory", envvar = Env.H2TOOL_DATA_DIR.variable)
+    private val dataDir by option(metavar = "H2 data directory", envvar = Env.H2TOOL_DATA_DIR.envVariable)
         .help("Location of database")
         .default(Env.H2TOOL_DATA_DIR.default)
 
@@ -67,7 +67,7 @@ class InitializeDatabaseCommand : CliktCommand(NAME) {
 
     private val quoted by option(
         "--quote-schema-name",
-        envvar = Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.variable,
+        envvar = Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.envVariable,
     ).help("Always quote schema names").flag(
         default = Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.default,
         defaultForHelp = "${Env.H2TOOL_ALWAYS_QUOTE_SCHEMA.default}"
@@ -77,14 +77,14 @@ class InitializeDatabaseCommand : CliktCommand(NAME) {
         "--user",
         help = "JDBC user name",
         metavar = "name",
-        envvar = Env.H2TOOL_DATABASE_USER.variable,
+        envvar = Env.H2TOOL_DATABASE_USER.envVariable,
     ).default(Env.H2TOOL_DATABASE_USER.default)
 
     private val password by option(
         "--password",
         metavar = "secret",
         help = "JDBC password (please change this if need be).",
-        envvar = Env.H2TOOL_DATABASE_PASSWORD.variable,
+        envvar = Env.H2TOOL_DATABASE_PASSWORD.envVariable,
     ).default(Env.H2TOOL_DATABASE_PASSWORD.default)
 
     private val initScript by option("--init", "-i", metavar = "script-file")

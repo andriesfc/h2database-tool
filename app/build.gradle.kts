@@ -16,11 +16,12 @@ dependencies {
     implementation(libs.clikt)
     implementation(libs.clikt.markdown)
     implementation(libs.h2)
+    testImplementation(kotlin("reflect"))
 }
 
-defaultTasks("clean", "build", "installDist")
+tasks.named("build").configure { dependsOn("assemble", "installDist", "test") }
 
-val buildName = "ygdrasil"
+val buildName = "arbolis"
 
 val generateBuildInfo by tasks.registering {
     group = "build"
@@ -44,7 +45,6 @@ val generateBuildInfo by tasks.registering {
         )
     }
 }
-
 
 
 sourceSets {

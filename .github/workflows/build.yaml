@@ -1,7 +1,0 @@
-name: Build latest distibutions
-on: [push]
-jobs:
-    Build-h2-tool-dist:
-        run-on: ubuntu-latest
-        steps:
-            - run: ./gradlew build

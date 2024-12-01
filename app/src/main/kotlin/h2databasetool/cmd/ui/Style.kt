@@ -7,6 +7,9 @@ import com.github.ajalt.mordant.rendering.TextStyles.bold
 import com.github.ajalt.mordant.rendering.TextStyles.underline
 import com.github.ajalt.mordant.rendering.TextStyles.italic
 
+/**
+ * A collection of styling functions for use with a full color ANSI terminal.
+ */
 data object Style {
 
     data object Colors {

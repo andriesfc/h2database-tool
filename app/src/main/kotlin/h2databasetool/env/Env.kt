@@ -4,14 +4,44 @@ package h2databasetool.env
 
 import com.github.ajalt.clikt.core.CliktError
 import h2databasetool.cmd.ui.Style
+import h2databasetool.commons.line
 import h2databasetool.commons.terminal.NL
 
-sealed class Env<out T : Any>(val variable: String, open val default: T, val description: String) {
+/**
+ * All environment values applicable to setting up defaults for this tool.
+ *
+ * @param T The value type.
+ * @property envVariable The environment variable used to configure
+ *    defaults with.
+ * @property default The value to use in the absence of an environment
+ *    variable, or an option.
+ * @property description A human friendly description (used in help).
+ *
+ * @param T Type of default.
+ */
+sealed class Env<out T : Any>(
+    val envVariable: String,
+    open val default: T,
+    val description: String,
+) : Comparable<Env<Any>> {
 
-    val isActive: Boolean get() = System.getenv(variable) != null
-    fun get(): String = System.getenv(variable)
+    val isActive: Boolean get() = System.getenv(envVariable) != null
 
-    object H2TOOL_ADMIN_PASSWORD_BITS : Env<UShort>(
+    final override fun toString(): String =
+        "$envVariable [$description]"
+
+    override fun compareTo(other: Env<Any>): Int =
+        envVariable.compareTo(other.envVariable, ignoreCase = true)
+
+    fun get(): String = System.getenv(envVariable)
+
+    data object H2TOOL_SERVER_FORCE_SHUTDOWN : Env<Boolean>(
+        "H2TOOL_SERVER_FORCE_SHUTDOWN",
+        false,
+        "Attempts to force shutdown if the first attempt failed"
+    )
+
+    data object H2TOOL_ADMIN_PASSWORD_BITS : Env<UShort>(
         "H2TOOL_ADMIN_PASSWORD_BITS", 16u,
         "Bit size used to generate admin passwords."
     )
@@ -48,7 +78,9 @@ sealed class Env<out T : Any>(val variable: String, open val default: T, val des
 
     data object H2TOOL_SERVER_PERMIT_CREATE_DB : Env<Boolean>(
         "H2TOOL_SERVER_PERMIT_CREATE_DB", false,
-        "Whether or not to allow client connections to create databases on the server host just by attempting to connect to it."
+        """
+            |Whether or not to allow client connections to create databases on
+            |the server host just by attempting to connect to it.""".trimMargin().line()
     )
 
     data object H2TOOL_SERVER_PORT : Env<UShort>(
@@ -75,7 +107,7 @@ sealed class Env<out T : Any>(val variable: String, open val default: T, val des
         "H2TOOL_SERVER_PASSWORD", "",
         """
             |Server admin password used to remotely shutdown a running database server. 
-            |(Note that if not set, the tool will create a random one time password)
+            |(Note that if not set, or is empty, the tool will create a random one time password)
             |""".trimMargin()
     )
 
@@ -88,21 +120,21 @@ sealed class Env<out T : Any>(val variable: String, open val default: T, val des
     ) {
 
         override val default: Int get() = permittedSizes[1].toInt()
-        val permittedSizes: List<UShort> = listOf(8u, 16u, 24u, 32u)
+        val permittedSizes: List<UShort> = listOf<UShort>(8u, 16u, 24u, 32u).sorted()
 
         private fun notPermitted(fromEnv: Any?): Nothing = throw CliktError(buildString {
-            val envVarName = Style.softFocusError("($variable=$fromEnv)")
+            val envVarName = Style.softFocusError("($envVariable=$fromEnv)")
             append(
                 "Invalid environment variable ", envVarName, " used to generate admin password. ",
                 NL,
-                "Please set ", Style.notice(variable), " to one of the following choices: "
+                "Please set ", Style.notice(envVariable), " to one of the following choices: "
             )
             permittedSizes.joinTo(this, prefix = "(", postfix = ")", transform = { Style.notice(it.toString()) })
             append('.')
         })
 
         operator fun invoke(): Int {
-            val fromEnvStr = System.getenv(variable) ?: return default
+            val fromEnvStr = System.getenv(envVariable) ?: return default
             val fromEnv = fromEnvStr.toUShortOrNull() ?: notPermitted(fromEnvStr)
             return when {
                 fromEnv in permittedSizes -> fromEnv.toInt()
@@ -112,24 +144,43 @@ sealed class Env<out T : Any>(val variable: String, open val default: T, val des
     }
 
     companion object {
-        private val entries by lazy {
+
+        /**
+         * Build the list of entries on lazily otherwise the compiler croaks with
+         * a NPE.
+         *
+         * > **VERY IMPORTANT**: This is a hand-coded list because we need to avoid reflection
+         * > as much as possible on account of using the Graal-toolchain.
+         *
+         * todo: **Please report this upstream as bug.**
+         */
+        private val _entries by lazy {
             listOf(
                 H2TOOL_ADMIN_PASSWORD_BITS,
+                H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE,
                 H2TOOL_ALWAYS_QUOTE_SCHEMA,
+                H2TOOL_DATABASE_PASSWORD,
+                H2TOOL_DATABASE_USER,
                 H2TOOL_DATA_DIR,
                 H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS,
                 H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS,
+                H2TOOL_SERVER_FORCE_SHUTDOWN,
                 H2TOOL_SERVER_HOST,
+                H2TOOL_SERVER_PASSWORD,
                 H2TOOL_SERVER_PERMIT_CREATE_DB,
                 H2TOOL_SERVER_PORT,
-                H2TOOL_DATABASE_USER,
-                H2TOOL_DATABASE_PASSWORD,
                 H2TOOL_TRACE_CALLS,
-                H2TOOL_SERVER_PASSWORD,
-                H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
-            ).sortedBy { env -> env.variable.uppercase() }
+            ).sorted()
         }
 
-        fun entries() = entries
+        /**
+         * A sorted list of `Env` entries.
+         *
+         * > **Important**: Remember to add any new object instance to the [_entries] list.
+         *
+         * @see _entries
+         */
+        @JvmStatic
+        fun entries(): List<Env<Comparable<*>>> = _entries
     }
 }

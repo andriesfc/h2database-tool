@@ -20,7 +20,7 @@ class GenerateAdminPasswordCommand : Runnable, CliktCommand(NAME) {
             |> size.    
         """.trimMargin()
 
-    private val bits by option("--bits", "-b", envvar = Env.H2TOOL_ADMIN_PASSWORD_BITS.variable)
+    private val bits by option("--bits", "-b", envvar = Env.H2TOOL_ADMIN_PASSWORD_BITS.envVariable)
         .choice(*sizeChoices)
         .help("Number of bits size of generated password")
 

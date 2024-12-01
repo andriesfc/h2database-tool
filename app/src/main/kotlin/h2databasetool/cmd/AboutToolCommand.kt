@@ -70,7 +70,7 @@ class AboutToolCommand : CliktCommand(NAME) {
                     }
                     Env.entries().filter { env -> env.isActive }.forEach { env ->
                         row {
-                            cell(softFocus(env.variable)) { align = TextAlign.RIGHT }
+                            cell(softFocus(env.envVariable)) { align = TextAlign.RIGHT }
                             cell(notice(env.get())) { align = TextAlign.LEFT }
                         }
                     }

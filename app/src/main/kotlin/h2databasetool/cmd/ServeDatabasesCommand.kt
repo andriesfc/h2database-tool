@@ -27,19 +27,19 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
         Serves database from the base directory.
     """.trimIndent()
 
-    private val trace by option("--trace", envvar = Env.H2TOOL_TRACE_CALLS.variable)
+    private val trace by option("--trace", envvar = Env.H2TOOL_TRACE_CALLS.envVariable)
         .help("Trace client calls and dumps output to a dot-trace file.")
         .flag(default = Env.H2TOOL_TRACE_CALLS.default, defaultForHelp = Env.H2TOOL_TRACE_CALLS.default.toString())
 
-    private val enableVirtualThreads by option(envvar = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.variable)
+    private val enableVirtualThreads by option(envvar = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.envVariable)
         .help("Use virtual threads when client connects.")
         .flag(default = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.default)
 
-    private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2TOOL_DATA_DIR.variable)
+    private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2TOOL_DATA_DIR.envVariable)
         .help("Location of database(s)")
         .default(Env.H2TOOL_DATA_DIR.default)
 
-    private val allowOthers by option("--allow-others", envvar = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.variable)
+    private val allowOthers by option("--allow-others", envvar = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.envVariable)
         .help("Allow connections from other hosts to databases.")
         .flag(
             default = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default,
@@ -49,27 +49,27 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
     private val bindAddress by option(
         "--bind-address",
         metavar = "host address",
-        envvar = Env.H2TOOL_SERVER_HOST.variable
+        envvar = Env.H2TOOL_SERVER_HOST.envVariable
     ).default(Env.H2TOOL_SERVER_HOST.default)
         .help("The network address the server should bind to.")
 
     private val managementPassword by option(
         "--management-password",
         metavar = "server management password",
-        envvar = Env.H2TOOL_SERVER_PASSWORD.variable
+        envvar = Env.H2TOOL_SERVER_PASSWORD.envVariable
     ).help("Protect the exposed port on the lan with a password (if not set a random password will be generated).")
 
     private val port by option(
         "--bind-port",
-        metavar = Env.H2TOOL_SERVER_PORT.variable,
-        envvar = Env.H2TOOL_SERVER_PORT.variable
+        metavar = Env.H2TOOL_SERVER_PORT.envVariable,
+        envvar = Env.H2TOOL_SERVER_PORT.envVariable
     ).convert { it.toUShort() }
         .default(Env.H2TOOL_SERVER_PORT.default)
         .help("Network port on which to serve the database.")
 
     private val autoCreateDbIfNotExists by option(
         "--permit-remote-db-creation",
-        envvar = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.variable
+        envvar = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.envVariable
     ).flag(
         default = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.default,
         defaultForHelp = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.default.toString()
