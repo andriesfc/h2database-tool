@@ -35,6 +35,8 @@ class AboutToolCommand : CliktCommand(NAME) {
             LocalDate.now().toString() to "Current Date:",
             BuildInfo.H2_LIB_VERSION to "H2 version:"
         ).sortedBy { (_, label) -> label.lowercase() }
+
+        val env = Env.entries().filter { it.isSet || it == Env.H2TOOL_DATA_DIR }
         render(terminal) {
             verticalLayout {
                 cell(grid {
@@ -60,7 +62,7 @@ class AboutToolCommand : CliktCommand(NAME) {
                         }
                     }
                     row {
-                        cell(softYellowFocus("System Environment Defaults")) {
+                        cell(softYellowFocus("System Environment Settings")) {
                             columnSpan = 2
                             align = TextAlign.CENTER
                         }
@@ -69,7 +71,7 @@ class AboutToolCommand : CliktCommand(NAME) {
                             bottom = 1
                         }
                     }
-                    Env.entries().filter { env -> env.isActive }.forEach { env ->
+                    env.forEach { env ->
                         row {
                             cell(softFocus("${env.envVariable}:")) { align = TextAlign.RIGHT }
                             cell(notice(env.get())) { align = TextAlign.LEFT }

@@ -3,10 +3,14 @@
 package h2databasetool.env
 
 import com.github.ajalt.clikt.core.CliktError
+import h2databasetool.cmd.InitializeDatabaseCommand
 import h2databasetool.cmd.ui.Style
-import h2databasetool.commons.line
+import h2databasetool.commons.file
+import h2databasetool.commons.stripMultiLine
+import h2databasetool.commons.stripMultiLineToMargin
 import h2databasetool.commons.terminal.NL
 import h2databasetool.env.Env.Companion._entries
+import h2databasetool.env.Env.H2TOOL_DB_FORCE_INIT_MODE.Choice.entries
 
 /**
  * All environment values applicable to setting up defaults for this tool.
@@ -25,7 +29,7 @@ sealed class Env<out T : Any>(
     val description: String,
 ) : Comparable<Env<Any>> {
 
-    val isActive: Boolean get() = System.getenv(envVariable) != null
+    val isSet: Boolean get() = System.getenv(envVariable) != null
 
     final override fun toString(): String =
         "$envVariable [$description]"
@@ -33,7 +37,28 @@ sealed class Env<out T : Any>(
     override fun compareTo(other: Env<Any>): Int =
         envVariable.compareTo(other.envVariable, ignoreCase = true)
 
-    fun get(): String = System.getenv(envVariable)
+    open fun get(): String = System.getenv(envVariable)
+
+    data object H2TOOL_DB_FORCE_INIT_MODE : Env<H2TOOL_DB_FORCE_INIT_MODE.Choice>(
+        "H2TOOL_DB_INIT_MODE",
+        Choice.FAIL,
+        """Determine how to the tool should handle when the user attempts
+            | to run the ${InitializeDatabaseCommand.NAME} command
+            | against an existing database.""".stripMultiLineToMargin()
+    ) {
+
+        enum class Choice(val choice: String) {
+            ALWAYS("always"),
+            FAIL("fail"),
+            SKIP("skip"),
+            INIT_ONLY_SCHEMAS("schemas"),
+            ;
+
+            companion object {
+                fun choices(): Map<String, Choice> = entries.associateBy(Choice::choice)
+            }
+        }
+    }
 
     data object H2TOOL_SERVER_FORCE_SHUTDOWN : Env<Boolean>(
         "hen",
@@ -54,11 +79,18 @@ sealed class Env<out T : Any>(
     data object H2TOOL_DATA_DIR : Env<String>(
         "H2TOOL_DATA_DIR", "~/.h2/data",
         "The directory in which H2 databases reside."
-    )
+    ) {
+        override fun get(): String = when {
+            isSet -> super.get()
+            else -> default.file(absolute = true).path
+        }
+    }
 
     data object H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS : Env<Boolean>(
         "H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS", false,
-        "Determine if running database server allows network connections from other than the host the server runs."
+        """Determine if running database server allows
+            | network connections from other than the 
+            | host the server runs.""".stripMultiLineToMargin()
     )
 
     data object H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS : Env<Boolean>(
@@ -80,7 +112,7 @@ sealed class Env<out T : Any>(
         "H2TOOL_SERVER_PERMIT_CREATE_DB", false,
         """
             |Whether or not to allow client connections to create databases on
-            |the server host just by attempting to connect to it.""".trimMargin().line()
+            |the server host just by attempting to connect to it.""".trimMargin().stripMultiLine()
     )
 
     data object H2TOOL_SERVER_PORT : Env<UShort>(
@@ -108,7 +140,7 @@ sealed class Env<out T : Any>(
         """
             |Server admin password used to remotely shutdown a running database server. 
             |(Note that if not set, or is empty, the tool will create a random one time password)
-            |""".trimMargin()
+            |""".stripMultiLineToMargin()
     )
 
     data object H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE : Env<Int>(
@@ -116,7 +148,7 @@ sealed class Env<out T : Any>(
         """
             |The number of bits a newly generated admin passwords. Note that only
             | certain sizes are permitted to ensure that passwords are reasonably
-            |  secure and random.""".trimMargin()
+            | secure and random.""".stripMultiLineToMargin()
     ) {
 
         override val default: Int get() = permittedSizes[1].toInt()
@@ -154,7 +186,7 @@ sealed class Env<out T : Any>(
          *
          * todo: **Please report the NPE upstream as bug.**
          */
-        private val _entries by lazy {
+        private val _entries: List<Env<Any>> by lazy {
             listOf(
                 H2TOOL_ADMIN_PASSWORD_BITS,
                 H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE,
@@ -170,6 +202,7 @@ sealed class Env<out T : Any>(
                 H2TOOL_SERVER_PERMIT_CREATE_DB,
                 H2TOOL_SERVER_PORT,
                 H2TOOL_TRACE_CALLS,
+                H2TOOL_DB_FORCE_INIT_MODE,
             ).sorted()
         }
 
@@ -181,6 +214,6 @@ sealed class Env<out T : Any>(
          * @see _entries
          */
         @JvmStatic
-        fun entries(): List<Env<Comparable<*>>> = _entries
+        fun entries(): List<Env<Any>> = _entries
     }
 }

@@ -3,18 +3,17 @@ package h2databasetool.cmd.ui
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextColors.Companion.rgb
 import com.github.ajalt.mordant.rendering.TextStyles
-import com.github.ajalt.mordant.rendering.TextStyles.bold
-import com.github.ajalt.mordant.rendering.TextStyles.underline
-import com.github.ajalt.mordant.rendering.TextStyles.italic
+import com.github.ajalt.mordant.rendering.TextStyles.*
 
 /**
- * A collection of styling functions for use with a full color ANSI terminal.
+ * A collection of styling functions for use with a full color ANSI
+ * terminal.
  */
 data object Style {
 
     data object Colors {
-        val illuminatingEmerald = rgb("#359570FF")
-        val chartreuse = rgb("#B0FC38")
+        val illuminatingEmerald = rgb("#359570ff")
+        val chartreuse = rgb("#b0fc38")
         val cerulean = rgb("#0492C2")
     }
 

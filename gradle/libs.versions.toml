@@ -12,6 +12,7 @@ h2 = "2.3.232"
 jdbi = "3.47.0"
 logback = "1.5.12"
 slf4j = "2.0.16"
+graalvm-buildtools = "0.10.3"
 
 [libraries]
 io-kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "io-kotest" }
@@ -33,10 +34,11 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
 jdbi-sqlobject = { module = "org.jdbi:jdbi3-sqlobject", version.ref = "jdbi" }
 jdbi-caffeine-cache = { module = "org.jdbi:jdbi3-caffeine-cache", version.ref = "jdbi" }
-jdbi-kotlin = { module = "org.jdbi:jdbi3-kotlin", version.ref = "jdbi"}
+jdbi-kotlin = { module = "org.jdbi:jdbi3-kotlin", version.ref = "jdbi" }
 jdbi-kotlin-sqlobject = { module = "org.jdbi:jdbi3-kotlin-sqlobject", version.ref = "jdbi" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 [plugins]
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-dokka-html = { id = "dev.adamko.dokkatoo"  }
+dokka-html = { id = "dev.adamko.dokkatoo" }
+graalbuildtools = { id = "org.graalvm.buildtools.native", version.ref = "graalvm-buildtools" }
