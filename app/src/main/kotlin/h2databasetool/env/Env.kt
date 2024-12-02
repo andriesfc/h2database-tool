@@ -152,7 +152,7 @@ sealed class Env<out T : Any>(
          * > reflection as much as possible on account of using the
          * > Graal-toolchain.
          *
-         * todo: **Please report this upstream as bug.**
+         * todo: **Please report the NPE upstream as bug.**
          */
         private val _entries by lazy {
             listOf(
