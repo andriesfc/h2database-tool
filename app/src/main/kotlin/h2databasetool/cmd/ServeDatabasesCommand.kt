@@ -22,7 +22,7 @@ import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
 class ServeDatabasesCommand : CliktCommand(NAME) {
-    
+
     override fun help(context: Context): String = """
         Serves database from the base directory.
     """.trimIndent()
@@ -31,8 +31,11 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
         .help("Trace client calls and dumps output to a dot-trace file.")
         .flag(default = Env.H2TOOL_TRACE_CALLS.default, defaultForHelp = Env.H2TOOL_TRACE_CALLS.default.toString())
 
-    private val enableVirtualThreads by option(envvar = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.envVariable)
-        .help("Use virtual threads when client connects.")
+    private val enableVirtualThreads by option(
+        "--enable-virtual-threads",
+        "--virtual-threads",
+        envvar = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.envVariable
+    ).help("Use virtual threads when client connects.")
         .flag(default = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.default)
 
     private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2TOOL_DATA_DIR.envVariable)
@@ -47,20 +50,20 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
         )
 
     private val bindAddress by option(
-        "--bind-address",
+        "--bind",
         metavar = "host address",
         envvar = Env.H2TOOL_SERVER_HOST.envVariable
     ).default(Env.H2TOOL_SERVER_HOST.default)
         .help("The network address the server should bind to.")
 
     private val managementPassword by option(
-        "--management-password",
+        "--pass",
         metavar = "server management password",
         envvar = Env.H2TOOL_SERVER_PASSWORD.envVariable
     ).help("Protect the exposed port on the lan with a password (if not set a random password will be generated).")
 
     private val port by option(
-        "--bind-port",
+        "--port",
         metavar = Env.H2TOOL_SERVER_PORT.envVariable,
         envvar = Env.H2TOOL_SERVER_PORT.envVariable
     ).convert { it.toUShort() }

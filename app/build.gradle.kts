@@ -34,9 +34,8 @@ val generateBuildInfo by tasks.registering {
     outputs.dir(output)
     doLast {
         //language=kotlin
-        val h2Version =
-            output.get().asFile.resolve("BuildInfo.kt").writeText(
-                """
+        output.get().asFile.resolve("BuildInfo.kt").writeText(
+            """
             package h2databasetool
             
             /**
@@ -59,7 +58,7 @@ val generateBuildInfo by tasks.registering {
                 const val H2_LIB_VERSION = "$h2LibVersion"
             }
             """.trimIndent()
-            )
+        )
     }
 }
 

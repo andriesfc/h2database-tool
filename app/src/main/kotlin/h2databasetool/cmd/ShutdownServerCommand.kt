@@ -44,7 +44,7 @@ class ShutdownServerCommand : CliktCommand(NAME) {
         metavar = "host",
         envvar = Env.H2TOOL_SERVER_HOST.envVariable
     ).default(Env.H2TOOL_SERVER_HOST.default)
-        .help("Host of the server runs on.")
+        .help("Host server address to bind to.")
 
     private val port by option(
         "--port", "-p", metavar = "port number",
