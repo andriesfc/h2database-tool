@@ -13,7 +13,7 @@ import org.h2.tools.Server.shutdownTcpServer
  * > **NOTE**: The application must have network access to host running the
  * > server, as well as the password for that server.
  */
-class ShutdownServer : CliktCommand(NAME) {
+class ShutdownServerCommand : CliktCommand(NAME) {
 
     override fun help(context: Context): String {
         return """
@@ -40,7 +40,7 @@ class ShutdownServer : CliktCommand(NAME) {
         .default(Env.H2TOOL_SERVER_PASSWORD.default)
 
     private val host by option(
-        "--host", "-h",
+        "--host",
         metavar = "host",
         envvar = Env.H2TOOL_SERVER_HOST.envVariable
     ).default(Env.H2TOOL_SERVER_HOST.default)
@@ -64,6 +64,6 @@ class ShutdownServer : CliktCommand(NAME) {
         )
 
     companion object {
-        const val NAME = "shutdownServer"
+        const val NAME = "shutdown"
     }
 }

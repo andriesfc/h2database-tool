@@ -12,7 +12,6 @@ import org.h2.util.StringUtils.convertBytesToHex
 
 class GenerateAdminPasswordCommand : Runnable, CliktCommand(NAME) {
 
-
     override fun help(context: Context): String =
         """ |Generates a random number of bytes using s secure random generator.
             |
@@ -21,12 +20,12 @@ class GenerateAdminPasswordCommand : Runnable, CliktCommand(NAME) {
         """.trimMargin()
 
     private val bits by option("--bits", "-b", envvar = Env.H2TOOL_ADMIN_PASSWORD_BITS.envVariable)
-        .choice(*sizeChoices)
+        .choice(*sizeChoices, metavar = "byte-size", ignoreCase = true)
         .help("Number of bits size of generated password")
 
     override fun run() {
 
-        val password = (bits?.toInt() ?: Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE())
+        val password = (bits?.toInt() ?: Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.value())
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 
@@ -38,7 +37,7 @@ class GenerateAdminPasswordCommand : Runnable, CliktCommand(NAME) {
         private val sizeChoices = Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
             .permittedSizes
             .sorted()
-            .map { "$it" to it }
+            .map { bitsSize -> Pair("$bitsSize", bitsSize) }
             .toTypedArray()
     }
 

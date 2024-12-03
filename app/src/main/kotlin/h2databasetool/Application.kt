@@ -10,7 +10,7 @@ fun main(args: Array<String>) =
             InitializeDatabaseCommand(),
             ServeDatabasesCommand(),
             GenerateAdminPasswordCommand(),
-            ShutdownServer()
+            ShutdownServerCommand()
         )
     ).main(args)
 

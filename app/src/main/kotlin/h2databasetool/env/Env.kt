@@ -165,7 +165,7 @@ sealed class Env<out T : Any>(
             append('.')
         })
 
-        operator fun invoke(): Int {
+        fun value(): Int {
             val fromEnvStr = System.getenv(envVariable) ?: return default
             val fromEnv = fromEnvStr.toUShortOrNull() ?: notPermitted(fromEnvStr)
             return when {

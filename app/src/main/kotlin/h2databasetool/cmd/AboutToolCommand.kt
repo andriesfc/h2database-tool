@@ -11,7 +11,7 @@ import h2databasetool.cmd.ui.Style.boldEmphasis
 import h2databasetool.cmd.ui.Style.notice
 import h2databasetool.cmd.ui.Style.softFocus
 import h2databasetool.cmd.ui.Style.softYellowFocus
-import h2databasetool.cmd.ui.render
+import h2databasetool.commons.render
 import h2databasetool.env.Env
 import java.time.LocalDate
 

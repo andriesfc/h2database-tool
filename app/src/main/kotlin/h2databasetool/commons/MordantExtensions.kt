@@ -1,4 +1,4 @@
-package h2databasetool.cmd.ui
+package h2databasetool.commons
 
 import com.github.ajalt.mordant.rendering.Widget
 import com.github.ajalt.mordant.terminal.Terminal

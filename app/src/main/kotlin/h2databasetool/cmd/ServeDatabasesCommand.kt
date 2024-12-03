@@ -11,10 +11,10 @@ import com.github.ajalt.mordant.table.grid
 import h2databasetool.cmd.ui.Style.boldEmphasis
 import h2databasetool.cmd.ui.Style.notice
 import h2databasetool.cmd.ui.Style.softFocus
-import h2databasetool.cmd.ui.render
-import h2databasetool.commons.terminal.NL
 import h2databasetool.commons.add
 import h2databasetool.commons.file
+import h2databasetool.commons.render
+import h2databasetool.commons.terminal.NL
 import h2databasetool.env.Env
 import org.h2.server.TcpServer
 import org.h2.util.MathUtils.secureRandomBytes
@@ -22,7 +22,7 @@ import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
 class ServeDatabasesCommand : CliktCommand(NAME) {
-
+    
     override fun help(context: Context): String = """
         Serves database from the base directory.
     """.trimIndent()
@@ -142,7 +142,7 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
     }
 
     private fun generateManagementPassword() =
-        Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE()
+        Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.value()
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 

@@ -26,10 +26,5 @@ data object Style {
     val h1 = (underline + Colors.cerulean + bold).let { styledText ->
         { s: String -> styledText(s.uppercase()) }
     }
-
-    val h2 = fun(heading: String) = (Colors.chartreuse + bold)(heading)
-
-    val info1 = fun(s: String) = (Colors.illuminatingEmerald + italic)(s)
-
 }
 
