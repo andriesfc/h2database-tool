@@ -12,7 +12,7 @@ develocity {
         fun CI() = System.getenv("CI") != null
         termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
         termsOfUseAgree = "yes"
-        publishing.onlyIf { true }
+        publishing.onlyIf { CI() }
         tag(if (CI()) "CI" else "local")
         tag(System.getProperty("os.name"))
         uploadInBackground = CI()
