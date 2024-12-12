@@ -23,8 +23,9 @@ jobs:
       - name: Upload build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Package
-          path: app/build/distributions
+          name: distributions
+          path: app/build/distributions/
+
 
 
 
