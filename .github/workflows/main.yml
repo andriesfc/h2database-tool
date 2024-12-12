@@ -28,7 +28,7 @@ jobs:
           retention-days: 5
           overwrite: 'false'
 
-  mac-mative-exe:
+  mative-exe:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -51,7 +51,3 @@ jobs:
         with:
           path: app/build/native/nativeCompile/
           name: h2-exe-${{ matrix.os }}
-
-
-
-
