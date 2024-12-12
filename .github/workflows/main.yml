@@ -24,6 +24,9 @@ jobs:
         uses: actions/upload-artifact@v4.4.3
         with:
           path: app/build/distributions
+          name: 'H2 Tool Java Apps'
+          retention-days: 5
+          overwrite: 'false'
 
 
 
