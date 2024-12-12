@@ -1,17 +1,20 @@
-on:
-  push:
-    branches:
-    - main
+name: Build h2 database tool
+run-name: ${{ github.actor }} running actions
+on: [ push ]
 jobs:
-  gradle_build_job:
-    runs-on: ubuntu-22.04
-    name: Builds the gradle project
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
-      - name: build gradle project step
-        id: build
-        uses: /gradle-github-action@v1
+      - name: Setup JDK 21 for x64
+        uses: actions/setup-java@v4.5.0
         with:
-          option: '--no-build-cache'
+          java-version: '21'
+          distribution: 'temurin'
+          architecture: 'x64'
+      - name: Setup Grade
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+      - name: Build with Gradle
+        run: ./gradlew build
 
 
