@@ -1,0 +1,14 @@
+on: [ push,pull_request ]
+jobs:
+  gradle_build_job:
+    runs-on: ubuntu-22.04
+    name: Builds the gradle project
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: build gradle project step
+        id: build
+        uses: /gradle-github-action@v1
+        with:
+          option: '--no-build-cache'
+
+
