@@ -28,6 +28,31 @@ jobs:
           retention-days: 5
           overwrite: 'false'
 
+  mac-mative-exe:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest,windows-latest,ubuntu-latest ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup GraalVM
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          architecture: 'x86'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+      - name: Build exe
+        run: ./gradlew nativeCompile
+      - name: archive executable
+        run: ./gradlew nativeCompile
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          path: app/build/native/nativeCompile/
+          name: h2-exe-${{ matrix.os }}
+
 
 
 

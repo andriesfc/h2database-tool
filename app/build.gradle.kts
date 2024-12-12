@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 import buildlogic.catalog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -117,11 +119,15 @@ graalvmNative {
     binaries.all {
         resources.autodetect()
     }
+    metadataRepository {
+        version = "0.1.0"
+    }
     binaries {
         named("main") {
             sharedLibrary = false
             imageName.set(application.applicationName)
             mainClass.set(application.mainClass.get())
+            buildArgs("-march=native")
         }
     }
 }
