@@ -3,7 +3,7 @@ pluginManagement {
 }
 
 plugins {
-    id("com.gradle.enterprise").version("3.19")
+    id("com.gradle.develocity").version("3.19")
 }
 
 
@@ -18,6 +18,8 @@ develocity {
         uploadInBackground = CI()
     }
 }
+
+enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 rootProject.name = "h2database-tool"
 

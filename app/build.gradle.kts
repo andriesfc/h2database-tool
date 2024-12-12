@@ -25,41 +25,79 @@ dependencies {
 tasks.named("build").configure { dependsOn("assemble", "installDist", "test") }
 
 val buildName = "arbolis"
-val h2LibVersion = catalog.findVersion("h2").get().requiredVersion
 
-val generateBuildInfo by tasks.registering {
-    group = "build"
-    description = "Generates Application Build Information"
-    val output = layout.buildDirectory.dir("generated/src/kotlin/h2databasetool")
-    outputs.dir(output)
-    doLast {
-        //language=kotlin
-        output.get().asFile.resolve("BuildInfo.kt").writeText(
+abstract class GenerateBuildInfo : DefaultTask() {
+
+    init {
+        group = "build"
+        description = "Generates Application Build Information"
+    }
+
+    @get:Input
+    abstract val appDescription: Property<String>
+
+    @get:Input
+    abstract val appExe: Property<String>
+
+    @get:Input
+    abstract val buildDate: Property<String>
+
+    @get:Input
+    abstract val buildOS: Property<String>
+
+    @get:Input
+    abstract val version: Property<String>
+
+    @get:Input
+    abstract val versionName: Property<String>
+
+    @get:Input
+    abstract val h2LibVersion: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val outputFile = outputDir.file("BuildInfo.kt").get().asFile
+        outputFile.writeText(
             """
             package h2databasetool
             
             /**
-             * Build information structure generated via the actual Gradle build. (have a look at the `:app:$name` task).
-             */
+            * Build information structure generated via the actual Gradle build. (have a look at the `:app:generateBuildInfo` task).
+            */
             data object BuildInfo {
                 /** Official application description. */
-                const val APP_DESCRIPTION = "${project.description}"
+                const val APP_DESCRIPTION = "${appDescription.get()}"
                 /** Name of the application command script taken from the application plugin configuration.*/
-                const val APP_EXE = "${application.applicationName}"
+                const val APP_EXE = "${appExe.get()}"
                 /** Date this build info was gestated. */
-                const val BUILD_DATE = "${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}"
+                const val BUILD_DATE = "${buildDate.get()}"
+
                 /** The operating system used to produce this build.*/
-                const val BUILD_OS = "${System.getProperty("os.name")} (${System.getProperty("os.version")})"
+                const val BUILD_OS = "${buildOS.get()}"
                 /** Tool version used for this build. */
-                const val VERSION = "${project.version}"
+                const val VERSION = "${version.get()}"
                 /** Name of the build */
-                const val VERSION_NAME = "$buildName"
+                const val VERSION_NAME = "${versionName.get()}"
                 /** Which version of the H2 library included in this tool. */
-                const val H2_LIB_VERSION = "$h2LibVersion"
+                const val H2_LIB_VERSION = "${h2LibVersion.get()}"
             }
-            """.trimIndent()
+        """.trimIndent()
         )
     }
+}
+
+val generateBuildInfo by tasks.registering(GenerateBuildInfo::class) {
+    outputDir.set(layout.buildDirectory.dir("generated/src/kotlin/h2databasetool"))
+    appDescription.set(project.description)
+    appExe.set(application.applicationName)
+    buildDate.set(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+    buildOS.set("${System.getProperty("os.name")} (${System.getProperty("os.version")})")
+    version.set(project.version.toString())
+    versionName.set(buildName)
+    h2LibVersion.set(catalog.findVersion("h2").get().requiredVersion)
 }
 
 
