@@ -1,4 +1,7 @@
-on: [ push,pull_request ]
+on:
+  push:
+    branches:
+    - main
 jobs:
   gradle_build_job:
     runs-on: ubuntu-22.04
