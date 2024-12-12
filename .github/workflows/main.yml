@@ -28,7 +28,7 @@ jobs:
           retention-days: 5
           overwrite: 'false'
 
-  mative-exe:
+  native-exe:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
