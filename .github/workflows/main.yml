@@ -20,12 +20,11 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - uses: actions/setup-java@v4.5.0
+      - name: Upload build artifacts
+        uses: actions/download-artifact@v4.1.8
         with:
-          java-version: '21'
-          distribution: 'graalvm'
-          architecture: 'x64'
-      - run: ./gradlew nativeCompile
+          name: Package
+          path: app/build/distributions
 
 
 
