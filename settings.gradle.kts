@@ -1,3 +1,5 @@
+import java.util.*
+
 pluginManagement {
     includeBuild("build-logic")
 }
@@ -14,6 +16,10 @@ develocity {
         termsOfUseAgree = "yes"
         publishing.onlyIf { CI() }
         tag(if (CI()) "CI" else "local")
+        val os = System.getProperty("os.name").lowercase(Locale.ENGLISH).replace(" ", "")
+        val osVersion = System.getProperty("os.version").lowercase(Locale.ENGLISH).replace(" ", "")
+        val osArchitecture = System.getProperty("os.arch").lowercase(Locale.ENGLISH).replace(" ", "")
+        tag("$os-$osVersion-$osArchitecture")
         tag(System.getProperty("os.name"))
         uploadInBackground = CI()
     }
