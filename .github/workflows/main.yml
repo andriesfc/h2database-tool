@@ -32,7 +32,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-,windows-latest,ubuntu-latest ]
         include:
           - os: macos-latest
             arch: darwin-x86
