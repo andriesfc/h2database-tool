@@ -3,14 +3,14 @@
 package h2databasetool.env
 
 import com.github.ajalt.clikt.core.CliktError
-import h2databasetool.cmd.InitializeDatabaseCommand
+import h2databasetool.cmd.InitDb
 import h2databasetool.cmd.ui.Style
 import h2databasetool.commons.file
-import h2databasetool.commons.stripMultiLine
-import h2databasetool.commons.stripMultiLineToMargin
-import h2databasetool.commons.terminal.NL
+import h2databasetool.commons.stripLineFeeds
+import h2databasetool.commons.stripLineFeedsToMargin
+import h2databasetool.commons.terminal.FORCE_LINE_BREAK
 import h2databasetool.env.Env.Companion._entries
-import h2databasetool.env.Env.H2TOOL_DB_FORCE_INIT_MODE.Choice.entries
+import h2databasetool.env.Env.H2TOOL_DB_FORCE_INIT.IfExistsChoice.entries
 
 /**
  * All environment values applicable to setting up defaults for this tool.
@@ -39,23 +39,34 @@ sealed class Env<out T : Any>(
 
     open fun get(): String = System.getenv(envVariable)
 
-    data object H2TOOL_DB_FORCE_INIT_MODE : Env<H2TOOL_DB_FORCE_INIT_MODE.Choice>(
-        "H2TOOL_DB_INIT_MODE",
-        Choice.FAIL,
-        """Determine how to the tool should handle when the user attempts
-            | to run the ${InitializeDatabaseCommand.NAME} command
-            | against an existing database.""".stripMultiLineToMargin()
+    data object H2TOOL_DB_FORCE_INIT : Env<H2TOOL_DB_FORCE_INIT.IfExistsChoice>(
+        "H2TOOL_DB_FORCE_INIT",
+        IfExistsChoice.FAIL,
+        description = """
+            |Determine how to the tool should behave when the user attempts to run the `${InitDb.COMMAND}` command against an existing database.$FORCE_LINE_BREAK
+            |
+            |>**Important**, consider the implications when using:
+            |
+            |1. `--if-exist ${IfExistsChoice.FAIL.choice}`: Will not attempt to do any initializing, but rather fail.
+            |2. `--if-exist ${IfExistsChoice.FORCED.choice}`: Attempts to to delete the database entirely before reinitializing it.
+            |3. `--if-exist ${IfExistsChoice.INIT_ONLY_SCHEMAS.choice}`: Only initializes specified schemas.
+            |4. `--if-exist ${IfExistsChoice.IGNORE.choice}`: Do not to perform any initializing.
+            |
+            |> Options 1 & 4 are the safest, as both choices avoid effecting any changes to an existing database.$FORCE_LINE_BREAK
+            |""".trimMargin()
     ) {
 
-        enum class Choice(val choice: String) {
-            ALWAYS("always"),
+        enum class IfExistsChoice(val choice: String) {
+            FORCED("force"),
             FAIL("fail"),
-            SKIP("skip"),
-            INIT_ONLY_SCHEMAS("schemas"),
+            IGNORE("ignore"),
+            INIT_ONLY_SCHEMAS("initSchemas"),
             ;
 
+            override fun toString(): String = choice
+
             companion object {
-                fun choices(): Map<String, Choice> = entries.associateBy(Choice::choice)
+                fun choices(): Map<String, IfExistsChoice> = entries.associateBy(IfExistsChoice::choice)
             }
         }
     }
@@ -90,7 +101,7 @@ sealed class Env<out T : Any>(
         "H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS", false,
         """Determine if running database server allows
             | network connections from other than the 
-            | host the server runs.""".stripMultiLineToMargin()
+            | host the server runs.""".stripLineFeedsToMargin()
     )
 
     data object H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS : Env<Boolean>(
@@ -112,7 +123,7 @@ sealed class Env<out T : Any>(
         "H2TOOL_SERVER_PERMIT_CREATE_DB", false,
         """
             |Whether or not to allow client connections to create databases on
-            |the server host just by attempting to connect to it.""".trimMargin().stripMultiLine()
+            |the server host just by attempting to connect to it.""".trimMargin().stripLineFeeds()
     )
 
     data object H2TOOL_SERVER_PORT : Env<UShort>(
@@ -140,7 +151,7 @@ sealed class Env<out T : Any>(
         """
             |Server admin password used to remotely shutdown a running database server. 
             |(Note that if not set, or is empty, the tool will create a random one time password)
-            |""".stripMultiLineToMargin()
+            |""".stripLineFeedsToMargin()
     )
 
     data object H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE : Env<Int>(
@@ -148,7 +159,7 @@ sealed class Env<out T : Any>(
         """
             |The number of bits a newly generated admin passwords. Note that only
             | certain sizes are permitted to ensure that passwords are reasonably
-            | secure and random.""".stripMultiLineToMargin()
+            | secure and random.""".stripLineFeedsToMargin()
     ) {
 
         override val default: Int get() = permittedSizes[1].toInt()
@@ -158,19 +169,38 @@ sealed class Env<out T : Any>(
             val envVarName = Style.softFocusError("($envVariable=$fromEnv)")
             append(
                 "Invalid environment variable ", envVarName, " used to generate admin password. ",
-                NL,
+                FORCE_LINE_BREAK,
                 "Please set ", Style.notice(envVariable), " to one of the following choices: "
             )
             permittedSizes.joinTo(this, prefix = "(", postfix = ")", transform = { Style.notice(it.toString()) })
             append('.')
         })
 
-        fun value(): Int {
+        fun boolean(): Int {
             val fromEnvStr = System.getenv(envVariable) ?: return default
             val fromEnv = fromEnvStr.toUShortOrNull() ?: notPermitted(fromEnvStr)
             return when {
                 fromEnv in permittedSizes -> fromEnv.toInt()
                 else -> notPermitted(fromEnv)
+            }
+        }
+    }
+
+    data object H2TOOL_SKIP_CONNECTION_CHECK : Env<Boolean>(
+        "H2TOOL_SKIP_CONNECTION_CHECK",
+        false,
+        "Skips the connection check before continuing."
+    ) {
+        fun boolean(): Boolean {
+            val fromEnvStr = System.getenv(envVariable)?.lowercase() ?: return default
+            return when (fromEnvStr) {
+                "true" -> true
+                "false" -> false
+                "yes" -> true
+                "no" -> false
+                else -> throw CliktError(
+                    "Invalid value from environment: \"$fromEnvStr\". Must be either: true, false, yes, or no."
+                )
             }
         }
     }
@@ -187,7 +217,7 @@ sealed class Env<out T : Any>(
          * todo: **Please report the NPE upstream as bug.**
          */
         private val _entries: List<Env<Any>> by lazy {
-            listOf(
+            setOf(
                 H2TOOL_ADMIN_PASSWORD_BITS,
                 H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE,
                 H2TOOL_ALWAYS_QUOTE_SCHEMA,
@@ -202,7 +232,8 @@ sealed class Env<out T : Any>(
                 H2TOOL_SERVER_PERMIT_CREATE_DB,
                 H2TOOL_SERVER_PORT,
                 H2TOOL_TRACE_CALLS,
-                H2TOOL_DB_FORCE_INIT_MODE,
+                H2TOOL_DB_FORCE_INIT,
+                H2TOOL_SKIP_CONNECTION_CHECK,
             ).sorted()
         }
 

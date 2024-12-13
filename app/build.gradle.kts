@@ -5,7 +5,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-description = "H2 database tool"
+description =
+    "A convenient collection of H2 database CLI tools packaged together with a database engine (H2 v${libs.h2.get().version})"
 
 plugins {
     id("buildlogic.kotlin.app")
@@ -25,7 +26,12 @@ dependencies {
     testImplementation(kotlin("reflect"))
 }
 
-tasks.named("build").configure { dependsOn("assemble", "installDist", "test") }
+tasks.named("installDist").configure { dependsOn("test") }
+
+
+tasks.named("build").configure {
+    dependsOn("assemble", "installDist")
+}
 
 val buildName = "arbolis"
 

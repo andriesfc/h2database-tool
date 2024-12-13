@@ -15,10 +15,10 @@ import h2databasetool.commons.render
 import h2databasetool.env.Env
 import java.time.LocalDate
 
-class AboutToolCommand : CliktCommand(NAME) {
+class AboutTool : CliktCommand(COMMAND) {
 
     companion object {
-        const val NAME = "about"
+        const val COMMAND = "about"
     }
 
     override fun help(context: Context): String {

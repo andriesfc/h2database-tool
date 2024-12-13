@@ -1,5 +1,6 @@
 package h2databasetool.env
 
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -13,7 +14,10 @@ class EnvTest : ExpectSpec({
 
         val missed = allEntries - Env.entries()
 
-        missed.shouldBeEmpty()
+        withClue("Following Env data object(s) should be added to the Env._entries list:") {
+            missed.shouldBeEmpty()
+        }
+
     }
 })
 

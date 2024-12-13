@@ -14,18 +14,25 @@ import h2databasetool.cmd.ui.Style.softFocus
 import h2databasetool.commons.add
 import h2databasetool.commons.file
 import h2databasetool.commons.render
-import h2databasetool.commons.terminal.NL
+import h2databasetool.commons.terminal.FORCE_LINE_BREAK
 import h2databasetool.env.Env
 import org.h2.server.TcpServer
 import org.h2.util.MathUtils.secureRandomBytes
 import org.h2.util.StringUtils.convertBytesToHex
 import java.io.File
 
-class ServeDatabasesCommand : CliktCommand(NAME) {
+class ServeDatabases : CliktCommand(COMMAND) {
 
     override fun help(context: Context): String = """
-        Serves database from the base directory.
-    """.trimIndent()
+        |Serves database from the H2 base data directory.$FORCE_LINE_BREAK
+        |Looks for databases in the H2 base directory to serve with a TCP/IP
+        |connection.
+        |
+        |> **IMPORTANT**: The following options may poses certain risks if enabled:
+        |>
+        |> 1. `--allow-others` - This will allow others to connect over the network to your running server.
+        |> 2. `--permit-remote-db-creation` - Permits users connecting to a running server to create database in your `H2TOOL_BASE_DIR`.
+    """.trimMargin()
 
     private val trace by option("--trace", envvar = Env.H2TOOL_TRACE_CALLS.envVariable)
         .help("Trace client calls and dumps output to a dot-trace file.")
@@ -57,7 +64,7 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
         .help("The network address the server should bind to.")
 
     private val managementPassword by option(
-        "--pass",
+        "--password",
         metavar = "server management password",
         envvar = Env.H2TOOL_SERVER_PASSWORD.envVariable
     ).help("Protect the exposed port on the lan with a password (if not set a random password will be generated).")
@@ -126,7 +133,7 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
 
         grid {
             row {
-                cell(boldEmphasis("Sever started up.${NL}Please note the following:")) {
+                cell(boldEmphasis("Sever started up.${FORCE_LINE_BREAK}Please note the following:")) {
                     columnSpan = 2
                     align = TextAlign.CENTER
                 }
@@ -145,12 +152,12 @@ class ServeDatabasesCommand : CliktCommand(NAME) {
     }
 
     private fun generateManagementPassword() =
-        Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.value()
+        Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.boolean()
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 
     companion object {
-        const val NAME = "serveDb"
+        const val COMMAND = "serveDb"
     }
 }
 

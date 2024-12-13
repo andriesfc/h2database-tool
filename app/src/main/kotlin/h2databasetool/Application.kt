@@ -6,11 +6,11 @@ import h2databasetool.cmd.*
 fun main(args: Array<String>) =
     Bootstrap(
         listOf(
-            AboutToolCommand(),
-            InitializeDatabaseCommand(),
-            ServeDatabasesCommand(),
-            GenerateAdminPasswordCommand(),
-            ShutdownServerCommand()
+            AboutTool(),
+            InitDb(),
+            ServeDatabases(),
+            CreateAdminPassword(),
+            ShutdownServer()
         )
     ).main(args)
 

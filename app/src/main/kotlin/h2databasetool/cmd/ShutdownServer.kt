@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.*
 import h2databasetool.cmd.ui.Style.softYellowFocus
-import h2databasetool.commons.terminal.NL
+import h2databasetool.commons.terminal.FORCE_LINE_BREAK
 import h2databasetool.env.Env
 import org.h2.tools.Server.shutdownTcpServer
 
@@ -13,12 +13,12 @@ import org.h2.tools.Server.shutdownTcpServer
  * > **NOTE**: The application must have network access to host running the
  * > server, as well as the password for that server.
  */
-class ShutdownServerCommand : CliktCommand(NAME) {
+class ShutdownServer : CliktCommand(COMMAND) {
 
     override fun help(context: Context): String {
         return """
             Shutdowns a server running on specific sever host and port.
-            $NL
+            $FORCE_LINE_BREAK
             > ${softYellowFocus("NOTE:")} The client must have network access to the host,
             > (or run on the same host), as well
             > as the server password used/generated at startup.
@@ -33,7 +33,7 @@ class ShutdownServerCommand : CliktCommand(NAME) {
         )
 
     private val adminPassword by option(
-        "--pass",
+        "--password",
         metavar = "password",
         envvar = Env.H2TOOL_SERVER_PASSWORD.envVariable
     ).help("Shuts down a running server on a host with a given port.")
@@ -64,6 +64,6 @@ class ShutdownServerCommand : CliktCommand(NAME) {
         )
 
     companion object {
-        const val NAME = "shutdown"
+        const val COMMAND = "shutdown"
     }
 }
