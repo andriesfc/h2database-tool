@@ -32,12 +32,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest,windows-latest,ubuntu-latest ]
+        os: [ macos-,windows-latest,ubuntu-latest ]
         include:
           - os: macos-latest
-            TARGET: x86_64-apple-darwin
-            COMPILER: clang
-            LINKER: clang
+            arch: darwin-x86
     steps:
       - uses: actions/checkout@v4
       - name: Setup GraalVM
