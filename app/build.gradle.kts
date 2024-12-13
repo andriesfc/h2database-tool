@@ -3,6 +3,7 @@
 import buildlogic.catalog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 description = "H2 database tool"
 
@@ -115,7 +116,13 @@ tasks.compileKotlin {
     dependsOn(generateBuildInfo)
 }
 
+
+
 graalvmNative {
+
+    fun osName() = System.getProperty("os.name").lowercase(Locale.ENGLISH).replace(" ", "")
+    fun osArch() = System.getProperty("os.arch").lowercase(Locale.ENGLISH).replace(" ", "")
+
     binaries.all {
         resources.autodetect()
     }
@@ -127,7 +134,10 @@ graalvmNative {
             sharedLibrary = false
             imageName.set(application.applicationName)
             mainClass.set(application.mainClass.get())
-            buildArgs("-march=native")
+            when {
+                osName() == "macosx" && osArch() == "x86_64" -> buildArgs("-march=skylake")
+                else -> buildArgs("-march=native")
+            }
         }
     }
 }
