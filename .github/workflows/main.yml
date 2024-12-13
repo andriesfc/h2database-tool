@@ -33,6 +33,11 @@ jobs:
     strategy:
       matrix:
         os: [ macos-latest,windows-latest,ubuntu-latest ]
+        include:
+          - os: macos-latest
+            TARGET: x86_64-apple-darwin
+            COMPILER: clang
+            LINKER: clang
     steps:
       - uses: actions/checkout@v4
       - name: Setup GraalVM
