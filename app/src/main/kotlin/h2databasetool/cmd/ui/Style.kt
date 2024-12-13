@@ -15,8 +15,10 @@ data object Style {
         val illuminatingEmerald = rgb("#359570ff")
         val chartreuse = rgb("#b0fc38")
         val cerulean = rgb("#0492C2")
+        val dazzlingRed = rgb("#D42106FF")
     }
 
+    val warn = bold + Colors.dazzlingRed
     val boldEmphasis = bold
     val notice = Colors.illuminatingEmerald + bold
     val softFocus = TextStyles.dim
@@ -26,5 +28,7 @@ data object Style {
     val h1 = (underline + Colors.cerulean + bold).let { styledText ->
         { s: String -> styledText(s.uppercase()) }
     }
+
+    fun th(header: String) = (Colors.cerulean + bold).invoke(header.lowercase())
 }
 

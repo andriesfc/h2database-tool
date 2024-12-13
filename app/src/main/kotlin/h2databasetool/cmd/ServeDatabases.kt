@@ -34,55 +34,55 @@ class ServeDatabases : CliktCommand(COMMAND) {
         |> 2. `--permit-remote-db-creation` - Permits users connecting to a running server to create database in your `H2TOOL_BASE_DIR`.
     """.trimMargin()
 
-    private val trace by option("--trace", envvar = Env.H2TOOL_TRACE_CALLS.envVariable)
+    private val trace by option("--trace", envvar = Env.H2ToolTraceCalls.envVariable)
         .help("Trace client calls and dumps output to a dot-trace file.")
-        .flag(default = Env.H2TOOL_TRACE_CALLS.default, defaultForHelp = Env.H2TOOL_TRACE_CALLS.default.toString())
+        .flag(default = Env.H2ToolTraceCalls.default, defaultForHelp = Env.H2ToolTraceCalls.default.toString())
 
     private val enableVirtualThreads by option(
         "--enable-virtual-threads",
         "--virtual-threads",
-        envvar = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.envVariable
+        envvar = Env.H2ToolServerEnableVirtualThreads.envVariable
     ).help("Use virtual threads when client connects.")
-        .flag(default = Env.H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS.default)
+        .flag(default = Env.H2ToolServerEnableVirtualThreads.default)
 
-    private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2TOOL_DATA_DIR.envVariable)
+    private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2ToolDataDir.envVariable)
         .help("Location of database(s)")
-        .default(Env.H2TOOL_DATA_DIR.default)
+        .default(Env.H2ToolDataDir.default)
 
-    private val allowOthers by option("--allow-others", envvar = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.envVariable)
+    private val allowOthers by option("--allow-others", envvar = Env.H2ToolServerAllowRemoteConnections.envVariable)
         .help("Allow connections from other hosts to databases.")
         .flag(
-            default = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default,
-            defaultForHelp = Env.H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS.default.toString()
+            default = Env.H2ToolServerAllowRemoteConnections.default,
+            defaultForHelp = Env.H2ToolServerAllowRemoteConnections.default.toString()
         )
 
     private val bindAddress by option(
         "--bind",
         metavar = "host address",
-        envvar = Env.H2TOOL_SERVER_HOST.envVariable
-    ).default(Env.H2TOOL_SERVER_HOST.default)
+        envvar = Env.H2ToolServerHost.envVariable
+    ).default(Env.H2ToolServerHost.default)
         .help("The network address the server should bind to.")
 
     private val managementPassword by option(
         "--password",
         metavar = "server management password",
-        envvar = Env.H2TOOL_SERVER_PASSWORD.envVariable
+        envvar = Env.H2ToolServerPassword.envVariable
     ).help("Protect the exposed port on the lan with a password (if not set a random password will be generated).")
 
     private val port by option(
         "--port",
-        metavar = Env.H2TOOL_SERVER_PORT.envVariable,
-        envvar = Env.H2TOOL_SERVER_PORT.envVariable
+        metavar = Env.H2ToolServerPort.envVariable,
+        envvar = Env.H2ToolServerPort.envVariable
     ).convert { it.toUShort() }
-        .default(Env.H2TOOL_SERVER_PORT.default)
+        .default(Env.H2ToolServerPort.default)
         .help("Network port on which to serve the database.")
 
     private val autoCreateDbIfNotExists by option(
         "--permit-remote-db-creation",
-        envvar = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.envVariable
+        envvar = Env.H2ToolServerPermitsCreateDb.envVariable
     ).flag(
-        default = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.default,
-        defaultForHelp = Env.H2TOOL_SERVER_PERMIT_CREATE_DB.default.toString()
+        default = Env.H2ToolServerPermitsCreateDb.default,
+        defaultForHelp = Env.H2ToolServerPermitsCreateDb.default.toString()
     ).help("Allow clients connecting to create their own databases.")
 
     private lateinit var _serverManagementPassword: String
@@ -106,7 +106,7 @@ class ServeDatabases : CliktCommand(COMMAND) {
         }.map(Any::toString).toTypedArray()
 
     override fun run() {
-        Env.H2TOOL_SERVER_HOST(bindAddress)
+        Env.H2ToolServerHost(bindAddress)
         val server = TcpServer()
         server.init(*prepareServerArgs())
         server.start()
@@ -152,7 +152,7 @@ class ServeDatabases : CliktCommand(COMMAND) {
     }
 
     private fun generateManagementPassword() =
-        Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.boolean()
+        Env.H2ToolAdminPasswordGeneratorSize.boolean()
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 

@@ -36,7 +36,7 @@ class AboutTool : CliktCommand(COMMAND) {
             BuildInfo.H2_LIB_VERSION to "H2 version:"
         ).sortedBy { (_, label) -> label.lowercase() }
 
-        val env = Env.entries().filter { it.isSet || it == Env.H2TOOL_DATA_DIR }
+        val env = Env.entries().filter { it.isSet || it == Env.H2ToolDataDir }
         render(terminal) {
             verticalLayout {
                 cell(grid {

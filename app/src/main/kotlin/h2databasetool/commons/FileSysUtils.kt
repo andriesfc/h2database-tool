@@ -1,11 +1,11 @@
 package h2databasetool.commons
 
 import java.io.File
+import java.io.IOException
 
 private const val USER_HOME_PREFIX = "~/"
 
 fun userHome(): File = File(System.getProperty("user.home"))
-fun cwd():File = File(System.getProperty("user.dir"))
 
 fun String.file(canonical: Boolean = true, absolute: Boolean = false): File =
     when {
@@ -21,7 +21,20 @@ operator fun File.component1(): File = parentFile
 operator fun File.component2(): String = nameWithoutExtension
 operator fun File.component3(): String? = extension.takeUnless(String::isEmpty)
 
-fun File.files(predicate: (File) -> Boolean) = listFiles(predicate)?.toList() ?: emptyList()
+inline fun File.files(crossinline predicate: (File) -> Boolean): List<File> =
+    { file: File -> file.isFile && predicate(file) }
+        .let { andFileOnly -> listFiles(andFileOnly)?.toList() ?: emptyList() }
 
-fun File.canonical(): File = canonicalFile
-fun File.absolute(): File = absoluteFile
+fun File.files(): List<File> = files({ true })
+
+inline fun File.directories(crossinline predicate: (File) -> Boolean): List<File> =
+    { file: File -> file.isDirectory && predicate(file) }
+        .let { andDirectoryOnly -> listFiles(andDirectoryOnly)?.toList() ?: emptyList() }
+
+fun File.directories(): List<File> = directories { true }
+
+fun File.ensureDir(): File {
+    if (!exists() && !mkdirs())
+        throw IOException("Unable to create directory: $this")
+    return this
+}

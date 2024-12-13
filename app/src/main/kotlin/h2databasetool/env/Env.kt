@@ -1,22 +1,19 @@
-@file:Suppress("ClassName")
-
 package h2databasetool.env
 
 import com.github.ajalt.clikt.core.CliktError
-import h2databasetool.cmd.InitDb
+import h2databasetool.cmd.InitializeDatabase
 import h2databasetool.cmd.ui.Style
 import h2databasetool.commons.file
 import h2databasetool.commons.stripLineFeeds
 import h2databasetool.commons.stripLineFeedsToMargin
 import h2databasetool.commons.terminal.FORCE_LINE_BREAK
 import h2databasetool.env.Env.Companion._entries
-import h2databasetool.env.Env.H2TOOL_DB_FORCE_INIT.IfExistsChoice.entries
+import h2databasetool.env.Env.H2ToolDbForceInit.IfExistsChoice.entries
 
 /**
  * All environment values applicable to setting up defaults for this tool.
  *
  * @param T The value type.
- * @param T Type of default.
  * @property envVariable The environment variable used to configure
  *    defaults with.
  * @property default The value to use in the absence of an environment
@@ -32,35 +29,24 @@ sealed class Env<out T : Any>(
     val isSet: Boolean get() = System.getenv(envVariable) != null
 
     final override fun toString(): String =
-        "$envVariable [$description]"
+        "$envVariable [${this@Env.description}]"
 
     override fun compareTo(other: Env<Any>): Int =
         envVariable.compareTo(other.envVariable, ignoreCase = true)
 
     open fun get(): String = System.getenv(envVariable)
 
-    data object H2TOOL_DB_FORCE_INIT : Env<H2TOOL_DB_FORCE_INIT.IfExistsChoice>(
+    data object H2ToolDbForceInit : Env<H2ToolDbForceInit.IfExistsChoice>(
         "H2TOOL_DB_FORCE_INIT",
         IfExistsChoice.FAIL,
-        description = """
-            |Determine how to the tool should behave when the user attempts to run the `${InitDb.COMMAND}` command against an existing database.$FORCE_LINE_BREAK
-            |
-            |>**Important**, consider the implications when using:
-            |
-            |1. `--if-exist ${IfExistsChoice.FAIL.choice}`: Will not attempt to do any initializing, but rather fail.
-            |2. `--if-exist ${IfExistsChoice.FORCED.choice}`: Attempts to to delete the database entirely before reinitializing it.
-            |3. `--if-exist ${IfExistsChoice.INIT_ONLY_SCHEMAS.choice}`: Only initializes specified schemas.
-            |4. `--if-exist ${IfExistsChoice.IGNORE.choice}`: Do not to perform any initializing.
-            |
-            |> Options 1 & 4 are the safest, as both choices avoid effecting any changes to an existing database.$FORCE_LINE_BREAK
-            |""".trimMargin()
+        description = "Determine how to the tool should behave when the user attempts to run the ${InitializeDatabase.COMMAND} command against an existing database."
     ) {
 
-        enum class IfExistsChoice(val choice: String) {
-            FORCED("force"),
-            FAIL("fail"),
-            IGNORE("ignore"),
-            INIT_ONLY_SCHEMAS("initSchemas"),
+        enum class IfExistsChoice(val choice: String, val description: String) {
+            FORCE("force", "Always attempts to destroy the database."),
+            FAIL("fail", "Fails with a non-zero exit code"),
+            SKIP_II("skipIt", "Skip all initializing routines."),
+            INIT_ONLY_SCHEMAS("initSchemas", "Only runs the schema initialization scripts (if present)."),
             ;
 
             override fun toString(): String = choice
@@ -71,23 +57,23 @@ sealed class Env<out T : Any>(
         }
     }
 
-    data object H2TOOL_SERVER_FORCE_SHUTDOWN : Env<Boolean>(
+    data object H2ToolServerForceShutdown : Env<Boolean>(
         "hen",
         false,
         "Attempts to force shutdown if the first attempt failed"
     )
 
-    data object H2TOOL_ADMIN_PASSWORD_BITS : Env<UShort>(
+    data object H2ToolAdminPasswordsBits : Env<UShort>(
         "H2TOOL_ADMIN_PASSWORD_BITS", 16u,
         "Bit size used to generate admin passwords."
     )
 
-    data object H2TOOL_ALWAYS_QUOTE_SCHEMA : Env<Boolean>(
+    data object H2ToolAlwaysQuoteSchema : Env<Boolean>(
         "H2TOOL_ALWAYS_QUOTE_SCHEMA", false,
         "Always quote the schema names when creating/setting up a new schema."
     )
 
-    data object H2TOOL_DATA_DIR : Env<String>(
+    data object H2ToolDataDir : Env<String>(
         "H2TOOL_DATA_DIR", "~/.h2/data",
         "The directory in which H2 databases reside."
     ) {
@@ -97,19 +83,19 @@ sealed class Env<out T : Any>(
         }
     }
 
-    data object H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS : Env<Boolean>(
+    data object H2ToolServerAllowRemoteConnections : Env<Boolean>(
         "H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS", false,
         """Determine if running database server allows
             | network connections from other than the 
             | host the server runs.""".stripLineFeedsToMargin()
     )
 
-    data object H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS : Env<Boolean>(
+    data object H2ToolServerEnableVirtualThreads : Env<Boolean>(
         "H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS", false,
         "Determine if the database server should employ virtual threads to handle client requests."
     )
 
-    data object H2TOOL_SERVER_HOST : Env<String>(
+    data object H2ToolServerHost : Env<String>(
         "H2TOOL_SERVER_HOST", "localhost",
         "The name/address a running server should bind to at startup."
     ) {
@@ -119,34 +105,34 @@ sealed class Env<out T : Any>(
         }
     }
 
-    data object H2TOOL_SERVER_PERMIT_CREATE_DB : Env<Boolean>(
+    data object H2ToolServerPermitsCreateDb : Env<Boolean>(
         "H2TOOL_SERVER_PERMIT_CREATE_DB", false,
         """
             |Whether or not to allow client connections to create databases on
             |the server host just by attempting to connect to it.""".trimMargin().stripLineFeeds()
     )
 
-    data object H2TOOL_SERVER_PORT : Env<UShort>(
+    data object H2ToolServerPort : Env<UShort>(
         "H2TOOL_SERVER_PORT", 2029u,
         "The port exposed to clients connecting to a running database server."
     )
 
-    data object H2TOOL_DATABASE_USER : Env<String>(
+    data object H2ToolDatabaseUser : Env<String>(
         "H2TOOL_DATABASE_USER", "sa",
         "Default database user name when the tool creates, and/or connects to database."
     )
 
-    data object H2TOOL_DATABASE_PASSWORD : Env<String>(
+    data object H2ToolDatabasePassword : Env<String>(
         "H2TOOL_DATABASE_PASSWORD", "secret",
         "Default database user password when the tool creates, and/or connects to database."
     )
 
-    data object H2TOOL_TRACE_CALLS : Env<Boolean>(
+    data object H2ToolTraceCalls : Env<Boolean>(
         "H2TOOL_TRACE_CALLS", false,
         "Enabling statement trace files."
     )
 
-    data object H2TOOL_SERVER_PASSWORD : Env<String>(
+    data object H2ToolServerPassword : Env<String>(
         "H2TOOL_SERVER_PASSWORD", "",
         """
             |Server admin password used to remotely shutdown a running database server. 
@@ -154,7 +140,7 @@ sealed class Env<out T : Any>(
             |""".stripLineFeedsToMargin()
     )
 
-    data object H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE : Env<Int>(
+    data object H2ToolAdminPasswordGeneratorSize : Env<Int>(
         "H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE", 0,
         """
             |The number of bits a newly generated admin passwords. Note that only
@@ -186,7 +172,7 @@ sealed class Env<out T : Any>(
         }
     }
 
-    data object H2TOOL_SKIP_CONNECTION_CHECK : Env<Boolean>(
+    data object H2ToolSkipConnectionCheck : Env<Boolean>(
         "H2TOOL_SKIP_CONNECTION_CHECK",
         false,
         "Skips the connection check before continuing."
@@ -218,22 +204,22 @@ sealed class Env<out T : Any>(
          */
         private val _entries: List<Env<Any>> by lazy {
             setOf(
-                H2TOOL_ADMIN_PASSWORD_BITS,
-                H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE,
-                H2TOOL_ALWAYS_QUOTE_SCHEMA,
-                H2TOOL_DATABASE_PASSWORD,
-                H2TOOL_DATABASE_USER,
-                H2TOOL_DATA_DIR,
-                H2TOOL_SERVER_ALLOW_REMOTE_CONNECTIONS,
-                H2TOOL_SERVER_ENABLE_VIRTUAL_THREADS,
-                H2TOOL_SERVER_FORCE_SHUTDOWN,
-                H2TOOL_SERVER_HOST,
-                H2TOOL_SERVER_PASSWORD,
-                H2TOOL_SERVER_PERMIT_CREATE_DB,
-                H2TOOL_SERVER_PORT,
-                H2TOOL_TRACE_CALLS,
-                H2TOOL_DB_FORCE_INIT,
-                H2TOOL_SKIP_CONNECTION_CHECK,
+                H2ToolAdminPasswordsBits,
+                H2ToolAdminPasswordGeneratorSize,
+                H2ToolAlwaysQuoteSchema,
+                H2ToolDatabasePassword,
+                H2ToolDatabaseUser,
+                H2ToolDataDir,
+                H2ToolServerAllowRemoteConnections,
+                H2ToolServerEnableVirtualThreads,
+                H2ToolServerForceShutdown,
+                H2ToolServerHost,
+                H2ToolServerPassword,
+                H2ToolServerPermitsCreateDb,
+                H2ToolServerPort,
+                H2ToolTraceCalls,
+                H2ToolDbForceInit,
+                H2ToolSkipConnectionCheck,
             ).sorted()
         }
 

@@ -1,10 +1,14 @@
 package h2databasetool.commons
 
 import java.io.File
+import java.io.IOException
 import java.io.Reader
+import java.net.URI
+import java.net.URL
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.SQLException
-import kotlin.jvm.Throws
+import kotlin.Throws
 
 private const val endOfStatement = ';'
 private const val eof = -1
@@ -17,21 +21,50 @@ private enum class State {
 }
 
 class ScriptExecutionError internal constructor(
-    val script: String,
+    val script: Any,
     val lineNo: Int,
-    cause: SQLException
-) : Exception(buildString {
-    append("Execution of script ", script, " failed at line number ", lineNo, ". ")
-    append("This was caused by a sql error #", cause.errorCode)
-    when (cause.message) {
-        null -> append(" (No specific detail message was supplied)")
-        else -> append("with message: ", cause.message)
+    cause: Exception,
+) : Exception(
+    /* message = */ cause.message(script.script(), lineNo),
+    /* cause = */ cause,
+    /* enableSuppression = */ cause.isSuppressed(),
+    /* writableStackTrace = */ cause.writeStacktrace()
+) {
+    companion object {
+        private const val NO_MESSAGE_SUPPLIED_MESSAGE = "(No message supplied)"
+        private fun Exception.message(script: String, lineNo: Int): String {
+            return when (this) {
+                is SQLException -> """
+                |This was caused by an SQL error: ${message ?: NO_MESSAGE_SUPPLIED_MESSAGE}. (For more
+                | information please consult the H2 documentation for the following error code: $errorCode)
+                """.stripLineFeedsToMargin()
+
+                is IOException -> "IO Error - ${message ?: NO_MESSAGE_SUPPLIED_MESSAGE} "
+                else -> message ?: NO_MESSAGE_SUPPLIED_MESSAGE
+            }
+        }
+
+        private fun Exception.isSuppressed(): Boolean = !(this is SQLException || this is IOException)
+        private fun Exception.writeStacktrace(): Boolean = !(this is SQLException || this is IOException)
+        private fun Any.script(): String {
+            return when (this) {
+                is BuildStatementSummary -> build()
+                is File -> path
+                is URL -> toString()
+                is URI -> toString()
+                is String -> this
+                is Appendable -> toString()
+                is Path -> toFile().path
+                else -> toString()
+            }
+        }
     }
-    append('.')
-}, cause)
+
+}
 
 @Throws(ScriptExecutionError::class)
-fun Connection.executeScript(sql: String, source: Any? = null) = executeScript(sql.reader(), source ?: summaryBuilderOf(sql))
+fun Connection.executeScript(sql: String, source: Any? = null) =
+    executeScript(sql.reader(), source ?: sql.asStatementSummaryBuilder())
 
 @Throws(ScriptExecutionError::class)
 fun Connection.executeScript(file: File) = executeScript(file.reader(), file)
@@ -79,17 +112,21 @@ fun Connection.executeScript(reader: Reader, script: Any = "snippet") {
             }
         }
     } catch (e: SQLException) {
-        throw ScriptExecutionError(
-            script = (script as? BuildStatementSummary)?.summarizeStatement()
-                ?: (script as? String?)
-                ?: (script as? File)?.path
-                ?: script.toString(),
-            lineNo = lineNo,
-            cause = e
-        )
+        e.raiseByScript(script, lineNo)
+    } catch (e: IOException) {
+        e.raiseByScript(script, lineNo)
     }
 }
 
+private fun Exception.raiseByScript(script: Any, lineNo: Int): Nothing =
+    throw ScriptExecutionError(
+        script = (script as? BuildStatementSummary)?.build()
+            ?: (script as? String)
+            ?: (script as? File)?.path
+            ?: script.toString(),
+        lineNo = lineNo,
+        cause = this
+    )
 
 private const val ELLIPSIS_CHAR = '\u2026'
 private const val SQL_STATEMENT_MAX_SIZE = 200
@@ -97,13 +134,13 @@ private const val SQL_STATEMENT_PREFIX = "Statement: "
 private const val SQL_STATEMENT_SHORTENED_PREFIX = "Statement (shortened): "
 
 private fun interface BuildStatementSummary {
-    fun summarizeStatement(): String
+    fun build(): String
 }
 
-private fun summaryBuilderOf(script: String) = BuildStatementSummary {
-    val shortenIt = script.length > SQL_STATEMENT_MAX_SIZE
+private fun String.asStatementSummaryBuilder() = BuildStatementSummary {
+    val shortenIt = length > SQL_STATEMENT_MAX_SIZE
     val statementPrefix = if (shortenIt) SQL_STATEMENT_SHORTENED_PREFIX else SQL_STATEMENT_PREFIX
-    val statement = if (shortenIt) script.substring(0, SQL_STATEMENT_MAX_SIZE) + ELLIPSIS_CHAR else script
+    val statement = if (shortenIt) substring(0, SQL_STATEMENT_MAX_SIZE) + ELLIPSIS_CHAR else this
     buildString(statementPrefix.length + statement.length) {
         append(statementPrefix)
         append(statement)

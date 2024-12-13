@@ -15,17 +15,17 @@ class CreateAdminPassword : Runnable, CliktCommand(COMMAND) {
     override fun help(context: Context): String =
         """ |Generates a random number of bytes using s secure random generator.
             |
-            |> **${Style.notice("NOTE:")}** By default, the generator uses ${Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.default} bits
+            |> **${Style.notice("NOTE:")}** By default, the generator uses ${Env.H2ToolAdminPasswordGeneratorSize.default} bits
             |> size.    
         """.trimMargin()
 
-    private val bits by option("--bits", "-b", envvar = Env.H2TOOL_ADMIN_PASSWORD_BITS.envVariable)
+    private val bits by option("--bits", "-b", envvar = Env.H2ToolAdminPasswordsBits.envVariable)
         .choice(*sizeChoices, metavar = "byte-size", ignoreCase = true)
         .help("Number of bits size of generated password")
 
     override fun run() {
 
-        val password = (bits?.toInt() ?: Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE.boolean())
+        val password = (bits?.toInt() ?: Env.H2ToolAdminPasswordGeneratorSize.boolean())
             .let(::secureRandomBytes)
             .let(::convertBytesToHex)
 
@@ -34,7 +34,7 @@ class CreateAdminPassword : Runnable, CliktCommand(COMMAND) {
 
     companion object {
         private const val COMMAND = "generateAdminPassword"
-        private val sizeChoices = Env.H2TOOL_ADMIN_PASSWORD_GENERATOR_SIZE
+        private val sizeChoices = Env.H2ToolAdminPasswordGeneratorSize
             .permittedSizes
             .sorted()
             .map { bitsSize -> Pair("$bitsSize", bitsSize) }
