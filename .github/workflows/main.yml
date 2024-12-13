@@ -32,9 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: macos-latest
-            arch: darwin-x86
+        os: [ macos-13,macos-latest,windows-latest,ubuntu-latest ]
     steps:
       - uses: actions/checkout@v4
       - name: Setup GraalVM
