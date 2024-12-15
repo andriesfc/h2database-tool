@@ -15,7 +15,7 @@ plugins {
 }
 
 application {
-    mainClass = "h2databasetool.ApplicationKt"
+    mainClass = "h2databasetool.H2DbToolApp"
     applicationName = "h2db"
 }
 

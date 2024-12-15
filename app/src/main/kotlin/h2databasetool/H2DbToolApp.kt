@@ -1,3 +1,5 @@
+@file:JvmName("H2DbToolApp")
+
 package h2databasetool
 
 import com.github.ajalt.clikt.core.main
