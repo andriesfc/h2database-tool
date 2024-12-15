@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
 import h2databasetool.BuildInfo.APP_DESCRIPTION
 import h2databasetool.BuildInfo.APP_EXE
-import h2databasetool.cmd.InitDb
+import h2databasetool.cmd.InitializeDatabase
 import h2databasetool.cmd.ServeDatabases
 import h2databasetool.cmd.ShutdownServer
 import h2databasetool.cmd.ui.Style.boldEmphasis
@@ -45,7 +45,7 @@ private fun Context.helpDoc(): String {
         
         1. Initialize a new database named `customersDb` with an admin login of `$adminUser` and password of `$adminUserPassword`.
            ```shell
-           $exe  ${InitDb.COMMAND} customerDb --user $adminUser --password $adminUserPassword
+           $exe  ${InitializeDatabase.COMMAND} customerDb --user $adminUser --password $adminUserPassword
            ```
         2. Serve up all available databases over TCP/IP on port 2029 with an admin password of `$serverPassword`.
            ```shell

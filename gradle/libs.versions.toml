@@ -13,8 +13,12 @@ jdbi = "3.47.0"
 logback = "1.5.12"
 slf4j = "2.0.16"
 graalvm-buildtools = "0.10.3"
+woodstox = "6.4.0"
 
 [libraries]
+
+woodstox-core = { module = "com.fasterxml.woodstox:woodstox-core", version.ref = "woodstox" }
+
 io-kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "io-kotest" }
 io-kotest-framework-api = { module = "io.kotest:kotest-framework-api", version.ref = "io-kotest" }
 io-kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "io-kotest" }

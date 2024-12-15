@@ -28,29 +28,29 @@ class ShutdownServer : CliktCommand(COMMAND) {
     private val forceShutdown by option("--force")
         .help("Forcefully shutdown server.")
         .flag(
-            default = Env.H2TOOL_SERVER_FORCE_SHUTDOWN.default,
-            defaultForHelp = Env.H2TOOL_SERVER_FORCE_SHUTDOWN.default.toString()
+            default = Env.H2ToolServerForceShutdown.default,
+            defaultForHelp = Env.H2ToolServerForceShutdown.default.toString()
         )
 
     private val adminPassword by option(
         "--password",
         metavar = "password",
-        envvar = Env.H2TOOL_SERVER_PASSWORD.envVariable
+        envvar = Env.H2ToolServerPassword.envVariable
     ).help("Shuts down a running server on a host with a given port.")
-        .default(Env.H2TOOL_SERVER_PASSWORD.default)
+        .default(Env.H2ToolServerPassword.default)
 
     private val host by option(
         "--host",
         metavar = "host",
-        envvar = Env.H2TOOL_SERVER_HOST.envVariable
-    ).default(Env.H2TOOL_SERVER_HOST.default)
+        envvar = Env.H2ToolServerHost.envVariable
+    ).default(Env.H2ToolServerHost.default)
         .help("Host server address to bind to.")
 
     private val port by option(
         "--port", "-p", metavar = "port number",
-        envvar = Env.H2TOOL_SERVER_PORT.envVariable
+        envvar = Env.H2ToolServerPort.envVariable
     ).convert { it.toUShort() }
-        .default(Env.H2TOOL_SERVER_PORT.default)
+        .default(Env.H2ToolServerPort.default)
         .help("The port the server is running on.")
 
     private fun uri() = "tcp://$host:$port"

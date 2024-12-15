@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 description =
-    "A convenient collection of H2 database CLI tools packaged together with a database engine (H2 v${libs.h2.get().version})"
+    "A convenient collection of H2 database scripts packaged into a single CLI Tool."
 
 plugins {
     id("buildlogic.kotlin.app")
@@ -16,7 +16,7 @@ plugins {
 
 application {
     mainClass = "h2databasetool.ApplicationKt"
-    applicationName = "h2"
+    applicationName = "h2db"
 }
 
 dependencies {
@@ -33,7 +33,7 @@ tasks.named("build").configure {
     dependsOn("assemble", "installDist")
 }
 
-val buildName = "arbolis"
+val buildName = "zappy"
 
 abstract class GenerateBuildInfo : DefaultTask() {
 
@@ -66,12 +66,15 @@ abstract class GenerateBuildInfo : DefaultTask() {
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
+    @get:Input
+    abstract val packageName: Property<String>
+
     @TaskAction
     fun generate() {
         val outputFile = outputDir.file("BuildInfo.kt").get().asFile
         outputFile.writeText(
             """
-            package h2databasetool
+            package ${packageName.get()}
             
             /**
             * Build information structure generated via the actual Gradle build. (have a look at the `:app:generateBuildInfo` task).
@@ -107,6 +110,7 @@ val generateBuildInfo by tasks.registering(GenerateBuildInfo::class) {
     version.set(project.version.toString())
     versionName.set(buildName)
     h2LibVersion.set(catalog.findVersion("h2").get().requiredVersion)
+    packageName.set("h2databasetool")
 }
 
 

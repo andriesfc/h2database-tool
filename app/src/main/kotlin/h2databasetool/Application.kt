@@ -7,7 +7,7 @@ fun main(args: Array<String>) =
     Bootstrap(
         listOf(
             AboutTool(),
-            InitDb(),
+            InitializeDatabase(),
             ServeDatabases(),
             CreateAdminPassword(),
             ShutdownServer()
