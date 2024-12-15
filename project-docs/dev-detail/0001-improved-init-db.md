@@ -6,7 +6,7 @@
 |--------------------|:------:|---------------------------------|------------|:--------:|-----------------------------------------------------------------|
 | start              |   FC   |                                 | 2024-12-13 |   15h    | Started to work, but should have done more upfront spec/design. |
 | feature-spec       |   FC   |                                 | 2024-12-14 |    3h    | Proper spec/design work.                                        |
-| feature-dev-branch |   FC   | feature/improved-command-initdb |            |          |                                                                 |
+| feature-dev-branch |   FC   | feature/improved-command-initdb | 2024-12-15 |    3h    | Not there yet, but good enough for now.                         |
 
 ## Problem statement
 
@@ -57,8 +57,16 @@ initializers when the command line arguments include schema initializers (in any
 
 ### Highlights
 
+1. More consistent application of the flags:
+
+    - `--if-exists fail`, now always fail.
+    - `--if-exists force`, now always force the destruction of the physical database files.
+    - `--if-exists skipIt`, now always skip all initializer steps.
+    - `--if-exists initSchema`, will only do schema init, and not try to drop destroy the physical files.
+
 ### Unresolved Issues
 
-### Known errors
+1. The output is still a bit all over the place. And looks less stellar.
+2. Help docs are also less than adequate. But this can only be improved by investing more in understanding
+   the [Clikt](https://github.com/ajalt/clikt) command line library.
 
-## Release Notes
