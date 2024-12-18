@@ -33,8 +33,22 @@ inline fun File.directories(crossinline predicate: (File) -> Boolean): List<File
 
 fun File.directories(): List<File> = directories { true }
 
-fun File.ensureDir(): File {
+inline fun File.ensureDir(failedToCreateDir: (required: String) -> String = { required -> "Unable create directory: $required" }): File {
     if (!exists() && !mkdirs())
-        throw IOException("Unable to create directory: $this")
+        throw IOException(failedToCreateDir(path))
     return this
+}
+
+/** Empties the current directory. */
+fun File.emptyDir(): Int {
+    require(isDirectory) { "Path must be a directory: $path" }
+    var deleteCounter: Int = 0
+    listFiles()?.forEach { file ->
+        val deleted = when {
+            file.isDirectory -> file.deleteRecursively()
+            else -> file.delete()
+        }
+        if (deleted) deleteCounter++
+    }
+    return deleteCounter
 }

@@ -6,6 +6,9 @@ import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
+import h2databasetool.cmd.option.dataDir
+import h2databasetool.cmd.option.jdbcPassword
+import h2databasetool.cmd.option.jdbcUser
 import h2databasetool.cmd.ui.Style
 import h2databasetool.cmd.ui.Style.boldEmphasis
 import h2databasetool.cmd.ui.Style.notice
@@ -31,9 +34,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
 
     override fun help(context: Context): String = "Create a new database in the specified base directory."
 
-    private val dataDir by option(metavar = "H2 data directory", envvar = Env.H2ToolDataDir.envVariable)
-        .help("Location of database")
-        .default(Env.H2ToolDataDir.default)
+    private val dataDir by option().dataDir()
 
     private val quoted by option(
         "--quote-schema-name",
@@ -43,19 +44,9 @@ class InitializeDatabase : CliktCommand(COMMAND) {
         defaultForHelp = "${Env.H2ToolAlwaysQuoteSchema.default}"
     )
 
-    private val user by option(
-        "--user",
-        help = "JDBC user name",
-        metavar = "name",
-        envvar = Env.H2ToolDatabaseUser.envVariable,
-    ).default(Env.H2ToolDatabaseUser.default)
+    private val user by option().jdbcUser()
 
-    private val password by option(
-        "--password",
-        metavar = "secret",
-        help = "JDBC password (please change this if need be).",
-        envvar = Env.H2ToolDatabasePassword.envVariable,
-    ).default(Env.H2ToolDatabasePassword.default)
+    private val password by option().jdbcPassword()
 
     private val initScript by option("--init", "-i", metavar = "script-file")
         .help(
@@ -80,7 +71,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
     )
     private val ifDataFileExists by option("--if-exists")
         .help("What to do when attempting to run ${notice(COMMAND)} command against an existing database.")
-        .choice(IfExistsChoice.choices())
+        .choice(IfExistsChoice.choices(), ignoreCase = true)
 
     private val initializer = object : Runnable {
 
@@ -99,7 +90,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
         fun configure() {
             _handlingOfExistingDataFiles = ifExistsChoice()
             _databaseName = database
-            _baseDir = dataDir.file().ensureDir()
+            _baseDir = dataDir.dir().ensureDir()
             _jdbcUrl = "jdbc:h2:$_baseDir/$_databaseName"
             _databaseFiles = _baseDir.listDatabaseFiles(_databaseName)
             _databaseExists = _databaseFiles.isNotEmpty()
@@ -266,7 +257,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
 
     companion object {
 
-        const val COMMAND = "initDb"
+        const val COMMAND = "init"
         const val DROP_SCRIPT_PREFIX = "drop:"
 
         private fun CoreCliktCommand.abort(theCause: Any): Nothing {

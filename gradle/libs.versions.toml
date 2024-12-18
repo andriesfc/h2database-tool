@@ -14,8 +14,15 @@ logback = "1.5.12"
 slf4j = "2.0.16"
 graalvm-buildtools = "0.10.3"
 woodstox = "6.4.0"
+jackson = "2.18.2"
+
 
 [libraries]
+
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
 
 woodstox-core = { module = "com.fasterxml.woodstox:woodstox-core", version.ref = "woodstox" }
 

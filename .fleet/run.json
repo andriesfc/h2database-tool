@@ -3,7 +3,7 @@
         {
             "type": "jps-run",
             "name": "h2tool",
-            "mainClass": "h2databasetool.app.H2ToolMain",
+            "mainClass": "h2databasetool.H2DbToolApp",
             "module": "app",
         },
     ]

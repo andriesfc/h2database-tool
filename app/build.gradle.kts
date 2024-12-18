@@ -11,7 +11,6 @@ description =
 plugins {
     id("buildlogic.kotlin.app")
     alias(libs.plugins.graalbuildtools)
-
 }
 
 application {
@@ -35,10 +34,10 @@ tasks.named("build").configure {
 
 val buildName = "zappy"
 
-abstract class GenerateBuildInfo : DefaultTask() {
+abstract class GenerateAppBuildInfo : DefaultTask() {
 
     init {
-        group = "build"
+        group = "codegen"
         description = "Generates Application Build Information"
     }
 
@@ -77,22 +76,27 @@ abstract class GenerateBuildInfo : DefaultTask() {
             package ${packageName.get()}
             
             /**
-            * Build information structure generated via the actual Gradle build. (have a look at the `:app:generateBuildInfo` task).
+            * Build information generated build file.
             */
             data object BuildInfo {
                 /** Official application description. */
                 const val APP_DESCRIPTION = "${appDescription.get()}"
+                
                 /** Name of the application command script taken from the application plugin configuration.*/
                 const val APP_EXE = "${appExe.get()}"
+                
                 /** Date this build info was gestated. */
                 const val BUILD_DATE = "${buildDate.get()}"
-
+                
                 /** The operating system used to produce this build.*/
                 const val BUILD_OS = "${buildOS.get()}"
+                
                 /** Tool version used for this build. */
                 const val VERSION = "${version.get()}"
+                
                 /** Name of the build */
                 const val VERSION_NAME = "${versionName.get()}"
+                
                 /** Which version of the H2 library included in this tool. */
                 const val H2_LIB_VERSION = "${h2LibVersion.get()}"
             }
@@ -101,7 +105,7 @@ abstract class GenerateBuildInfo : DefaultTask() {
     }
 }
 
-val generateBuildInfo by tasks.registering(GenerateBuildInfo::class) {
+val generateAppBuildInfo by tasks.registering(GenerateAppBuildInfo::class) {
     outputDir.set(layout.buildDirectory.dir("generated/src/kotlin/h2databasetool"))
     appDescription.set(project.description)
     appExe.set(application.applicationName)
@@ -117,13 +121,13 @@ val generateBuildInfo by tasks.registering(GenerateBuildInfo::class) {
 sourceSets {
     main {
         kotlin {
-            srcDir(generateBuildInfo)
+            srcDir(generateAppBuildInfo)
         }
     }
 }
 
 tasks.compileKotlin {
-    dependsOn(generateBuildInfo)
+    dependsOn(generateAppBuildInfo)
 }
 
 

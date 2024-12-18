@@ -34,7 +34,9 @@ sealed class Env<out T : Any>(
     override fun compareTo(other: Env<Any>): Int =
         envVariable.compareTo(other.envVariable, ignoreCase = true)
 
-    open fun get(): String = System.getenv(envVariable)
+    open fun default(): String = default.toString()
+
+    open fun get(): String = System.getenv(envVariable) ?: default()
 
     data object H2ToolDbForceInit : Env<H2ToolDbForceInit.IfExistsChoice>(
         "H2TOOL_DB_FORCE_INIT",

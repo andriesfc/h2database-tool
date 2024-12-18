@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.semver4j.Semver
 import java.io.File
 import java.io.IOException
+import kotlin.io.path.name
 
 fun File.ensureDirs(): File {
 
@@ -47,4 +48,16 @@ fun Project.propagateVersioning() {
         project.subprojects.forEach { propagateVersion(it, version) }
     }
     propagateVersion(rootProject, Semver.parse(rootProject.version.toString()) ?: return)
+}
+
+fun Project.internalizePath(file: File): String {
+
+    val projectRoot = layout.projectDirectory.asFile.toPath()
+    val filePath = file.absoluteFile.toPath()
+    val internalPath = when {
+        filePath.startsWith(projectRoot) -> filePath.subpath(projectRoot.nameCount, filePath.nameCount)
+        else -> filePath
+    }.toFile().path
+
+    return projectRoot.name + File.separator + internalPath
 }

@@ -11,8 +11,10 @@ fun main(args: Array<String>) =
             AboutTool(),
             InitializeDatabase(),
             ServeDatabases(),
-            CreateAdminPassword(),
-            ShutdownServer()
-        )
+            NewAdminPassword(),
+            ShutdownServer(),
+            DeleteDbFiles(),
+            ListDbFiles()
+        ).sortedBy { command -> command.commandName.lowercase() }
     ).main(args)
 

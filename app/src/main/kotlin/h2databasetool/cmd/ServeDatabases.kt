@@ -8,11 +8,11 @@ import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.rendering.TextAlign.LEFT
 import com.github.ajalt.mordant.rendering.TextAlign.RIGHT
 import com.github.ajalt.mordant.table.grid
+import h2databasetool.cmd.option.dataDir
 import h2databasetool.cmd.ui.Style.boldEmphasis
 import h2databasetool.cmd.ui.Style.notice
 import h2databasetool.cmd.ui.Style.softFocus
 import h2databasetool.commons.add
-import h2databasetool.commons.file
 import h2databasetool.commons.render
 import h2databasetool.commons.terminal.FORCE_LINE_BREAK
 import h2databasetool.env.Env
@@ -45,9 +45,7 @@ class ServeDatabases : CliktCommand(COMMAND) {
     ).help("Use virtual threads when client connects.")
         .flag(default = Env.H2ToolServerEnableVirtualThreads.default)
 
-    private val baseDir by option("--data-dir", metavar = "directory", envvar = Env.H2ToolDataDir.envVariable)
-        .help("Location of database(s)")
-        .default(Env.H2ToolDataDir.default)
+    private val baseDir by option().dataDir()
 
     private val allowOthers by option("--allow-others", envvar = Env.H2ToolServerAllowRemoteConnections.envVariable)
         .help("Allow connections from other hosts to databases.")
@@ -95,7 +93,7 @@ class ServeDatabases : CliktCommand(COMMAND) {
                 managementPassword ?: generateManagementPassword().also {
                     managementPasswordGenerated = true
                 }
-            _baseDir = baseDir.file(canonical = true, absolute = true)
+            _baseDir = baseDir.dir()
             if (trace) add("-trace")
             if (enableVirtualThreads) add("-tcpVirtualThreads", true)
             if (autoCreateDbIfNotExists) add("-ifNotExists", true) else add("-ifExists", true)
@@ -157,7 +155,7 @@ class ServeDatabases : CliktCommand(COMMAND) {
             .let(::convertBytesToHex)
 
     companion object {
-        const val COMMAND = "serveDb"
+        const val COMMAND = "serve"
     }
 }
 

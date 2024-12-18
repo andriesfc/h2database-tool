@@ -13,6 +13,5 @@ inline fun <reified T> resourceOfClassWithExt(ext: String) =
         .let { name -> if (ext.isEmpty()) name else "$name.$ext" }
         .let { resource<T>(it) }
 
-
 inline fun <reified T : Any> T.resourceOf(resourceUri: String): URL =
     javaClass.getResource(resourceUri) ?: throw ClassPathResourceNotFound(resourceUri)

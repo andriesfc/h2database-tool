@@ -1,4 +1,9 @@
 {
     "editor.formatOnSave": true,
-    "prettier.mode": "Enabled"
+    "prettier.mode": "Enabled",
+    "files.exclude": [
+        ".DS_Store",
+        ".git"
+    ],
+    "editor.guideToSoftWrapBy": 100
 }
