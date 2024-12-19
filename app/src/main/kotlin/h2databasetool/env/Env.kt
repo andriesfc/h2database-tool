@@ -60,7 +60,7 @@ sealed class Env<out T : Any>(
     }
 
     data object H2ToolServerForceShutdown : Env<Boolean>(
-        "hen",
+        "H2TOOL_SERVER_FORCE_SHUTDOWN",
         false,
         "Attempts to force shutdown if the first attempt failed"
     )

@@ -2,18 +2,14 @@ package h2databasetool.cmd
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.table.grid
-import com.github.ajalt.mordant.table.verticalLayout
+import com.github.ajalt.mordant.widgets.Text
 import h2databasetool.BuildInfo
-import h2databasetool.cmd.ui.Style.boldEmphasis
-import h2databasetool.cmd.ui.Style.notice
-import h2databasetool.cmd.ui.Style.softFocus
-import h2databasetool.cmd.ui.Style.softYellowFocus
-import h2databasetool.commons.render
+import h2databasetool.cmd.option.dataDir
+import h2databasetool.cmd.ui.Style.h1
 import h2databasetool.env.Env
-import java.time.LocalDate
 
 class AboutTool : CliktCommand(COMMAND) {
 
@@ -21,64 +17,44 @@ class AboutTool : CliktCommand(COMMAND) {
         const val COMMAND = "about"
     }
 
+    private val dataDir by option().dataDir()
+
     override fun help(context: Context): String {
-        return "Displays interesting information about configuration and this tool."
+        return "Displays interesting configurations."
     }
 
     override fun run() {
-        val heading = boldEmphasis(BuildInfo.APP_DESCRIPTION.uppercase())
-        val detail = listOf(
-            BuildInfo.VERSION to "Build Version:",
-            BuildInfo.VERSION_NAME to "Build Name:",
-            BuildInfo.BUILD_DATE to "Build Date:",
-            BuildInfo.BUILD_OS to "Build OS:",
-            LocalDate.now().toString() to "Current Date:",
-            BuildInfo.H2_LIB_VERSION to "H2 version:"
-        ).sortedBy { (_, label) -> label.lowercase() }
-
-        val env = Env.entries().filter { it.isSet || it == Env.H2ToolDataDir }
-        render(terminal) {
-            verticalLayout {
-                cell(grid {
-                    row {
-                        cell(boldEmphasis(heading)) {
-                            columnSpan = 2
-                            align = TextAlign.CENTER
-
-                        }
-                        padding { top = 1 }
-                    }
-                    row {
-                        cell(softYellowFocus("Some interesting details")) {
-                            columnSpan = 2
-                            align = TextAlign.CENTER
-                            padding { bottom = 1 }
-                        }
-                    }
-                    detail.forEach { (value, label) ->
-                        row {
-                            cell(softFocus(label)) { align = TextAlign.RIGHT }
-                            cell(notice(value)) { align = TextAlign.LEFT }
-                        }
-                    }
-                    row {
-                        cell(softYellowFocus("System Environment Settings")) {
-                            columnSpan = 2
-                            align = TextAlign.CENTER
-                        }
-                        padding {
-                            top = 1
-                            bottom = 1
-                        }
-                    }
-                    env.forEach { env ->
-                        row {
-                            cell(softFocus("${env.envVariable}:")) { align = TextAlign.RIGHT }
-                            cell(notice(env.get())) { align = TextAlign.LEFT }
-                        }
-                    }
-                })
+        echo(grid {
+            row { cell(h1("tool environment")) { columnSpan = 2; align = TextAlign.CENTER } }
+            Env.entries().filter { env -> env.isSet }.forEach { env ->
+                row {
+                    cell("${env.envVariable}:") { align = TextAlign.RIGHT }
+                    cell(env.get())
+                }
             }
-        }
+            row { }
+            row { cell(h1("databases")) { columnSpan = 2; align = TextAlign.CENTER } }
+            dataDir.dbNames().forEach { database ->
+                row {
+                    cell(Text(text = "- $database")) { align = TextAlign.LEFT; columnSpan = 2 }
+                }
+            }
+            row { }
+            row { cell(h1("build information")) { columnSpan = 2; align = TextAlign.CENTER } }
+            listOf(
+                BuildInfo.BUILD_OS to "Build Info:",
+                BuildInfo.BUILD_DATE to "Build Date:",
+                BuildInfo.VERSION_NAME to "Version Name:",
+                BuildInfo.H2_LIB_VERSION to "H2 Library Version:",
+                BuildInfo.VERSION to "Build Version:"
+            ).sortedBy { (_, value) -> value.lowercase() }.forEach { (value, label) ->
+                row {
+                    cell(label) { align = TextAlign.RIGHT }
+                    cell(value)
+                }
+            }
+        })
     }
+
 }
+

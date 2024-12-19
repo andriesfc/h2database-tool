@@ -161,12 +161,11 @@ class InitializeDatabase : CliktCommand(COMMAND) {
             .sortedBy { (_, type) -> type.nameSuffix }
             .takeUnless { listing -> listing.isEmpty() } ?: return
 
-        terminal.println(DataDeletionView(databaseName, baseDir, dbFiles))
+        terminal.println(DataDeletionView(databaseName, dbFiles))
     }
 
     private fun DataDeletionView(
         databaseName: String,
-        baseDir: File,
         dbFiles: List<Pair<File, H2FileType>>,
     ): Any {
         val remaining = dbFiles.count { (file) -> file.exists() }
@@ -209,7 +208,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
         val runSchemaScript =
             { schemaName: String, script: File ->
                 runScripLet {
-                    echo("${boldEmphasis("Executing")} script ${notice(script.name)} (dir:${softFocus("${script.parent}")})")
+                    echo("${boldEmphasis("Executing")} script ${notice(script.name)} (dir:${softFocus(script.parent)})")
                     using(connection) {
                         executeScript("set schema $schemaName")
                         executeScript(script)
@@ -235,7 +234,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
                 echo("Datasource configured as $jdbcUrl")
             }.also { ds ->
                 if (testConnection) ds.runCatching {
-                    var connectionClosed: Boolean = false
+                    var connectionClosed = false
                     try {
                         connection.close()
                         connectionClosed = true
@@ -258,7 +257,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
     companion object {
 
         const val COMMAND = "init"
-        const val DROP_SCRIPT_PREFIX = "drop:"
+        private const val DROP_SCRIPT_PREFIX = "drop:"
 
         private fun CoreCliktCommand.abort(theCause: Any): Nothing {
             echo(Style.Colors.dazzlingRed("Error:"), trailingNewline = false)
@@ -278,21 +277,21 @@ class InitializeDatabase : CliktCommand(COMMAND) {
 
         private fun OptionWithValues<String?, String, String>.schemaInitSpecs(
             quoted: () -> Boolean,
-            dropScriptPrefix: () -> String = { InitializeDatabase.DROP_SCRIPT_PREFIX },
+            dropScriptPrefix: () -> String = { DROP_SCRIPT_PREFIX },
         ): OptionWithValues<Set<SchemaInitSpec>, List<String>, String> =
-            varargValues(1, 2).transformAll() { values: List<List<String>> ->
-                val dropScriptPrefix = dropScriptPrefix()
-                val quoted = quoted()
+            varargValues(1, 2).transformAll { values: List<List<String>> ->
+                val prefix = dropScriptPrefix()
+                val qouteIt = quoted()
                 values.map { args ->
 
                     val onlyDrop = args
                         .first()
-                        .startsWith(dropScriptPrefix)
+                        .startsWith(prefix)
 
                     val schemaName = args
                         .first()
-                        .substringAfter(dropScriptPrefix)
-                        .let { if (quoted) "\"$it\"" else it }
+                        .substringAfter(prefix)
+                        .let { schemaName -> if (qouteIt) "\"$schemaName\"" else schemaName }
 
                     val schemaScriptFile =
                         args.secondOrNull().takeUnless { onlyDrop }?.file(canonical = true, absolute = true)
@@ -315,6 +314,3 @@ class InitializeDatabase : CliktCommand(COMMAND) {
 
     }
 }
-
-
-
