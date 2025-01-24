@@ -39,6 +39,16 @@ inline fun File.ensureDir(failedToCreateDir: (required: String) -> String = { re
     return this
 }
 
+inline fun File.ensureParents(failedToCreateParents: File.() -> String = { "Unable to create parents for: $path" }): File {
+
+    if (exists() || parentFile.exists())
+        return this
+
+    parentFile.ensureDir { failedToCreateParents() }
+
+    return this
+}
+
 /** Empties the current directory. */
 fun File.emptyDir(): Int {
     require(isDirectory) { "Path must be a directory: $path" }

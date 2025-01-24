@@ -5,8 +5,7 @@ import buildlogic.ensureParents
 import buildlogic.lib
 import org.gradle.kotlin.dsl.support.useToRun
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.InputStreamReader
-import java.util.Properties
+import java.util.*
 
 plugins {
     id("buildlogic.java")
@@ -41,15 +40,16 @@ tasks.withType<KotlinCompile>().configureEach {
         // Flag ensures all codes get compiled with JDK 21
         // compatible runtime libraries:
         freeCompilerArgs.add("-Xjdk-release=21")
+        freeCompilerArgs.add("-Xwhen-guards")
+        freeCompilerArgs.add("-Xnon-local-break-continue")
+        freeCompilerArgs.add("-Xmulti-dollar-interpolation")
     }
 }
 
-val setKotestDefaults by tasks.registering {
-    group = "project"
+val optimizeKotestSettings by tasks.registering {
+    group = "build"
     description =
-        """ |Initializes either a new kotest.properties file, or updated it with
-            |defaults if it exists but not using the defaults.
-            |""".trimMargin()
+        "Initializes either a new kotest.properties file, or updated it with defaults if it exists but not using the defaults."
 
     val propsFile = project.layout.projectDirectory.file("src/test/resources/kotest.properties")
     val defaultProps = listOf(

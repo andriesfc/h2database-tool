@@ -14,7 +14,8 @@ fun main(args: Array<String>) =
             NewAdminPassword(),
             ShutdownServer(),
             DeleteDbFiles(),
-            ListDbFiles()
+            ListDbFiles(),
+            CreateDatabase(),
         ).sortedBy { command -> command.commandName.lowercase() }
     ).main(args)
 

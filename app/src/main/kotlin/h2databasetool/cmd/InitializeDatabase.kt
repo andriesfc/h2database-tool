@@ -281,7 +281,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
         ): OptionWithValues<Set<SchemaInitSpec>, List<String>, String> =
             varargValues(1, 2).transformAll { values: List<List<String>> ->
                 val prefix = dropScriptPrefix()
-                val qouteIt = quoted()
+                val quoteIt = quoted()
                 values.map { args ->
 
                     val onlyDrop = args
@@ -291,7 +291,7 @@ class InitializeDatabase : CliktCommand(COMMAND) {
                     val schemaName = args
                         .first()
                         .substringAfter(prefix)
-                        .let { schemaName -> if (qouteIt) "\"$schemaName\"" else schemaName }
+                        .let { schemaName -> if (quoteIt) "\"$schemaName\"" else schemaName }
 
                     val schemaScriptFile =
                         args.secondOrNull().takeUnless { onlyDrop }?.file(canonical = true, absolute = true)
