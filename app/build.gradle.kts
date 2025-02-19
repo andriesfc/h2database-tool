@@ -32,7 +32,7 @@ tasks.named("build").configure {
     dependsOn("assemble", "installDist")
 }
 
-val buildName = "zappy"
+val buildName = "toffycat"
 
 abstract class GenerateAppBuildInfo : DefaultTask() {
 

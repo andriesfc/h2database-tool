@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "io.github.andriesfc.h2database-tool"
-version = "0.0.1"
+version = "0.0.2"
 
 subprojects {
     group = rootProject.group
