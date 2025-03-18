@@ -14,7 +14,7 @@ import h2databasetool.env.Env
 class AboutTool : CliktCommand(COMMAND) {
 
     companion object {
-        const val COMMAND = "about"
+        const val COMMAND = "env"
     }
 
     private val dataDir by option().dataDir()
